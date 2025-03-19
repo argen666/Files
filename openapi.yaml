@@ -1,0 +1,4344 @@
+openapi: 3.1.0
+info:
+  title: Partoo Rest API
+  version: v2
+  license:
+    name: © Copyright Partoo
+    url: https://www.partoo.co/en/gtu-api/
+servers:
+- url: https://api.partoo.co/v2
+  description: Production server
+- url: https://api.sandbox.partoo.co/v2
+  description: Sandbox server for clients and partners.
+security:
+- ApiKeyAuth: []
+paths:
+  /business/search:
+    get:
+      operationId: searchBusinesses
+      tags:
+      - Businesses
+      summary: Search for businesses
+      description: Search businesses with READ access, use filters, paginated results
+        (30 per page).
+      parameters:
+      - $ref: '#/components/parameters/query_filter_by_fuzzy_query_on_business'
+      - $ref: '#/components/parameters/query_business__in'
+      - $ref: '#/components/parameters/query_filter_by_org_id'
+      - $ref: '#/components/parameters/query_filter_by_group_id'
+      - $ref: '#/components/parameters/query_filter_by_groups'
+      - $ref: '#/components/parameters/query_filter_by_country'
+      - $ref: '#/components/parameters/query_filter_by_business_name'
+      - $ref: '#/components/parameters/query_filter_by_business_status'
+      - $ref: '#/components/parameters/query_filter_by_zipcode'
+      - $ref: '#/components/parameters/query_filter_by_city'
+      - $ref: '#/components/parameters/query_filter_by_business_code'
+      - $ref: '#/components/parameters/query_filter_by_business_modification_timestamp'
+      - $ref: '#/components/parameters/query_filter_by_business_features__in'
+      - $ref: '#/components/parameters/query_filter_by_business_features__notin'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_review_management'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_presence_management'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_review_booster'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_messages'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate__gte'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate__lte'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate'
+      - $ref: '#/components/parameters/query_filter_by_business_promo'
+      - in: query
+        name: connected_to_gmb_location
+        schema:
+          type: string
+          enum:
+          - 'True'
+          - 'False'
+        required: false
+        description: Filter by Google location link.
+      - in: query
+        name: connected_to_facebook_location
+        schema:
+          type: string
+          enum:
+          - 'True'
+          - 'False'
+        required: false
+        description: Filter by current Facebook location.
+      - $ref: '#/components/parameters/query_page_up_to_100'
+      - $ref: '#/components/parameters/query_per_page_1_100'
+      - in: query
+        name: order_by
+        schema:
+          type: string
+          enum:
+          - id
+          - name
+          - code
+          - created
+          - modified
+          - country
+          - city
+          - zipcode
+          - completion_rate
+          - -id
+          - -name
+          - -code
+          - -created
+          - -modified
+          - -country
+          - -city
+          - -zipcode
+          - -completion_rate
+          default: id
+        required: false
+        description: Order result by attribute, reverse order with `-` before attribute
+          name, e.g. `order_by=-name`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ListResult'
+                - type: object
+                  properties:
+                    businesses:
+                      type: array
+                      description: List of Businesses
+                      items:
+                        $ref: '#/components/schemas/BusinessWithCustomFields'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /business/search/stats:
+    get:
+      operationId: searchBusinessesStats
+      tags:
+      - Businesses
+      summary: Get completion rate stats from your businesses
+      description: This endpoint provides completion rate statistics aggregated across
+        all businesses based on given filters, returning average completion rate and
+        counts for low, medium, and high businesses. It functions similarly to [operation/searchBusinesses](https://developers.partoo.co/rest_api/v2/#operation/searchBusinesses)
+        but with different output.
+      parameters:
+      - $ref: '#/components/parameters/query_filter_by_fuzzy_query_on_business'
+      - $ref: '#/components/parameters/query_business__in'
+      - $ref: '#/components/parameters/query_filter_by_org_id'
+      - $ref: '#/components/parameters/query_filter_by_group_id'
+      - $ref: '#/components/parameters/query_filter_by_groups'
+      - $ref: '#/components/parameters/query_filter_by_country'
+      - $ref: '#/components/parameters/query_filter_by_business_name'
+      - $ref: '#/components/parameters/query_filter_by_business_status'
+      - $ref: '#/components/parameters/query_filter_by_zipcode'
+      - $ref: '#/components/parameters/query_filter_by_city'
+      - $ref: '#/components/parameters/query_filter_by_business_code'
+      - $ref: '#/components/parameters/query_filter_by_business_modification_timestamp'
+      - $ref: '#/components/parameters/query_filter_by_business_features__in'
+      - $ref: '#/components/parameters/query_filter_by_business_features__notin'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_review_management'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_presence_management'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_review_booster'
+      - $ref: '#/components/parameters/query_filter_by_business_subscription_to_messages'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate__gte'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate__lte'
+      - $ref: '#/components/parameters/query_filter_by_business_completion_rate'
+      - $ref: '#/components/parameters/query_filter_by_business_promo'
+      - in: query
+        name: connected_to_gmb_location
+        schema:
+          type: string
+          enum:
+          - 'True'
+          - 'False'
+        required: false
+        description: Filter by Google location link.
+      - in: query
+        name: connected_to_facebook_location
+        schema:
+          type: string
+          enum:
+          - 'True'
+          - 'False'
+        required: false
+        description: Filter by Facebook location link.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  average_completion_rate:
+                    description: Calculates average completion rate based on specified
+                      filters.
+                    type: integer
+                    example: 72
+                  counts:
+                    type: object
+                    properties:
+                      low:
+                        type: integer
+                        example: 2
+                        description: Get count of businesses meeting filters with
+                          completion score <=33.
+                      mid:
+                        type: integer
+                        example: 10
+                        description: 'API: Get count of businesses matching specified
+                          filters with completion score between 33 and 66.'
+                      high:
+                        type: integer
+                        example: 22
+                        description: 'API: Get count of businesses matching specified
+                          filters with completion score >66.'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /business/connections_stats:
+    get:
+      tags:
+      - Businesses
+      operationId: getBusinessConnectionsStats
+      summary: Statistics for your connected businesses
+      description: Endpoint to access number of businesses on various platforms.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: 'Total number of businesses.
+
+                      '
+                  linked_to_gmb_count:
+                    type: integer
+                    description: Number of Google-linked businesses.
+                  linked_to_facebook_count:
+                    type: integer
+                    description: Number of Facebook-linked businesses.
+                  linked_to_tripadvisor_count:
+                    type: integer
+                    description: Number of businesses on Tripadvisor.
+                  linked_to_instagram_count:
+                    type: integer
+                    description: Get number of Instagram-linked businesses.
+        '401':
+          $ref: '#/components/responses/401'
+  /business:
+    post:
+      tags:
+      - Businesses
+      summary: Create business
+      description: API for creating new business within organization.
+      operationId: createBusiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Request object
+              type: object
+              required:
+              - name
+              - country
+              - categories
+              - contacts
+              properties:
+                name:
+                  $ref: '#/components/schemas/BusinessName'
+                org_id:
+                  $ref: '#/components/schemas/BusinessOrgId'
+                groups:
+                  $ref: '#/components/schemas/groups'
+                reach:
+                  $ref: '#/components/schemas/BusinessReach'
+                country:
+                  $ref: '#/components/schemas/BusinessCountry'
+                zipcode:
+                  $ref: '#/components/schemas/BusinessZipcode'
+                city:
+                  $ref: '#/components/schemas/RequiredBusinessCity'
+                region:
+                  $ref: '#/components/schemas/BusinessRegion'
+                categories:
+                  $ref: '#/components/schemas/BusinessCategories'
+                code:
+                  $ref: '#/components/schemas/BusinessCode'
+                status:
+                  $ref: '#/components/schemas/BusinessStatus'
+                opening_date:
+                  $ref: '#/components/schemas/BusinessOpeningDate'
+                address_full:
+                  $ref: '#/components/schemas/AddressFull'
+                address2:
+                  $ref: '#/components/schemas/Address2'
+                lat:
+                  $ref: '#/components/schemas/BusinessLatitude'
+                long:
+                  $ref: '#/components/schemas/BusinessLongitude'
+                website_url:
+                  $ref: '#/components/schemas/BusinessWebsite'
+                facebook_url:
+                  $ref: '#/components/schemas/BusinessFacebookPage'
+                twitter_url:
+                  $ref: '#/components/schemas/BusinessTwitter'
+                description_short:
+                  $ref: '#/components/schemas/BusinessShortDescription'
+                description_long:
+                  $ref: '#/components/schemas/BusinessLongDescription'
+                open_hours:
+                  $ref: '#/components/schemas/OpenHours'
+                specific_hours:
+                  $ref: '#/components/schemas/SpecificHours'
+                contacts:
+                  $ref: '#/components/schemas/BusinessContactsCreate'
+                photos:
+                  $ref: '#/components/schemas/Photos'
+                national_identification_number:
+                  $ref: '#/components/schemas/BusinessNationalIdentificationNumber'
+                custom_fields:
+                  $ref: '#/components/schemas/CustomFields.Update'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/RequestStatus'
+                  id:
+                    $ref: '#/components/schemas/BusinessId'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+  /business/{business_id}:
+    get:
+      tags:
+      - Businesses
+      operationId: getBusiness
+      summary: Business information
+      description: Endpoint to access business information with `READ` access required.
+      parameters:
+      - $ref: '#/components/parameters/business_id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessWithCustomFields'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+    post:
+      tags:
+      - Businesses
+      operationId: updateBusiness
+      summary: Update business
+      description: Endpoint to access business information with `WRITE` access. Only
+        specified values considered (like `PATCH`). Disabled org fields cannot be
+        updated.
+      parameters:
+      - $ref: '#/components/parameters/business_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Request object
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/BusinessName'
+                org_id:
+                  $ref: '#/components/schemas/BusinessOrgId'
+                groups:
+                  $ref: '#/components/schemas/groups'
+                country:
+                  $ref: '#/components/schemas/BusinessCountry'
+                zipcode:
+                  $ref: '#/components/schemas/BusinessZipcode'
+                city:
+                  $ref: '#/components/schemas/BusinessCity'
+                region:
+                  $ref: '#/components/schemas/BusinessRegion'
+                categories:
+                  $ref: '#/components/schemas/BusinessCategories'
+                code:
+                  $ref: '#/components/schemas/BusinessCode'
+                status:
+                  $ref: '#/components/schemas/BusinessStatus'
+                opening_date:
+                  $ref: '#/components/schemas/BusinessOpeningDate'
+                address2:
+                  description: Row address string
+                  type: string
+                address_full:
+                  $ref: '#/components/schemas/AddressFull'
+                lat:
+                  $ref: '#/components/schemas/BusinessLatitude'
+                long:
+                  $ref: '#/components/schemas/BusinessLongitude'
+                website_url:
+                  $ref: '#/components/schemas/BusinessWebsite'
+                facebook_url:
+                  $ref: '#/components/schemas/BusinessFacebookPage'
+                twitter_url:
+                  $ref: '#/components/schemas/BusinessTwitter'
+                description_short:
+                  $ref: '#/components/schemas/BusinessShortDescription'
+                description_long:
+                  $ref: '#/components/schemas/BusinessLongDescription'
+                open_hours:
+                  $ref: '#/components/schemas/OpenHours'
+                specific_hours:
+                  $ref: '#/components/schemas/SpecificHours'
+                contacts:
+                  $ref: '#/components/schemas/BusinessContacts'
+                photos:
+                  $ref: '#/components/schemas/Photos'
+                national_identification_number:
+                  $ref: '#/components/schemas/BusinessNationalIdentificationNumber'
+                custom_fields:
+                  $ref: '#/components/schemas/CustomFields.Update'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/RequestStatus'
+                  id:
+                    $ref: '#/components/schemas/BusinessId'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          description: Action not allowed.
+          content:
+            application/json:
+              schema:
+                description: Unauthorized action error for authenticated users.
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Error details.
+                    properties:
+                      authorization:
+                        additionalProperties:
+                          type: string
+                          default: Operation not allowed
+              example:
+                errors:
+                  authorization:
+                    name: edit_not_allowed
+                    open_hours: edit_not_allowed
+                    photos.primary: edit_not_allowed
+                    photos.secondary: edit_not_allowed
+        '404':
+          $ref: '#/components/responses/404'
+    delete:
+      tags:
+      - Businesses
+      operationId: deleteBusiness
+      summary: Delete business
+      description: Endpoint to delete a business with `WRITE` access required.
+      parameters:
+      - $ref: '#/components/parameters/business_id'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: Response object
+                type: object
+                properties:
+                  id:
+                    $ref: '#/components/schemas/BusinessId'
+                  status:
+                    $ref: '#/components/schemas/RequestStatus'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /attributes/list:
+    get:
+      summary: List Google Attributes
+      description: Retrieve Google Attributes for a Category in a specific language.
+        View and manage business attributes.
+      operationId: getAttributes
+      tags:
+      - Google
+      parameters:
+      - $ref: '#/components/parameters/category_name'
+      - $ref: '#/components/parameters/country'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributesGroupResponse'
+        '400':
+          description: Wrong or missing parameters
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/AttributesMissingParametersError'
+                - $ref: '#/components/schemas/AttributesWrongCategoryError'
+                - $ref: '#/components/schemas/AttributesWrongLangError'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /holidays/{country}:
+    get:
+      tags:
+      - Holidays
+      operationId: getHolidays
+      summary: Get holidays
+      description: Retrieve upcoming bank holidays for a specified country within
+        the next 365 days, ordered by occurrence dates.
+      parameters:
+      - name: country
+        in: path
+        required: true
+        schema:
+          type: string
+        example: FR
+        description: Country code from ISO 3166 standard - https://www.iban.com/country-codes
+      - name: lang
+        in: query
+        schema:
+          description: 'Preferred language for holiday names. Default: user''s language
+            or country''s primary language.'
+          type: string
+          enum:
+          - fr
+          - en
+          - es
+          - it
+          - pt-br
+          - de
+          - ar
+          example: fr
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  holidays:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Name of bank holiday
+                        date:
+                          type: string
+                          format: date
+                          description: Date of bank holiday
+                example:
+                  holidays:
+                  - name: Armistice
+                    date: '2023-11-11'
+                  - name: Noël
+                    date: '2023-12-25'
+                  - name: Jour de l'an
+                    date: '2024-01-01'
+                  - name: Lundi de Pâques
+                    date: '2024-04-01'
+                  - name: Fête du Travail
+                    date: '2024-05-01'
+                  - name: Fête de la Victoire
+                    date: '2024-05-08'
+                  - name: Ascension
+                    date: '2024-05-09'
+                  - name: Lundi de Pentecôte
+                    date: '2024-05-20'
+                  - name: Fête nationale
+                    date: '2024-07-14'
+                  - name: Assomption
+                    date: '2024-08-15'
+                  - name: Toussaint
+                    date: '2024-11-01'
+                  - name: Christmas
+                    date: '2024-12-25'
+                  - name: New Year's Day
+                    date: '2025-01-01'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+  /place_action_links:
+    get:
+      tags:
+      - Place Action Links
+      summary: Get Place Action Links
+      description: Get list of place action links.
+      operationId: getAvailablePlaceActionLinks
+      parameters:
+      - $ref: '#/components/parameters/query_place_action_link_lang'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPlaceActionLinksResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /reviews:
+    get:
+      summary: Search for reviews
+      description: Search for business reviews with pagination, requiring `READ` access.
+      operationId: searchReviews
+      tags:
+      - Reviews
+      parameters:
+      - $ref: '#/components/parameters/query_business__in'
+      - $ref: '#/components/parameters/query_business__notin'
+      - $ref: '#/components/parameters/query_content__isnull'
+      - $ref: '#/components/parameters/query_partner__in'
+      - $ref: '#/components/parameters/query_gmb_rating__in'
+      - $ref: '#/components/parameters/query_tripadvisor_rating__in'
+      - $ref: '#/components/parameters/query_recommended__in'
+      - $ref: '#/components/parameters/query_review_update_date__gte'
+      - $ref: '#/components/parameters/query_review_update_date__lte'
+      - $ref: '#/components/parameters/query_review_state'
+      - $ref: '#/components/parameters/query_tag_label_in'
+      - $ref: '#/components/parameters/query_review_without_tag'
+      - $ref: '#/components/parameters/query_keywords'
+      - $ref: '#/components/parameters/query_page_up_to_100'
+      - $ref: '#/components/parameters/query_per_page_1_100'
+      - $ref: '#/components/parameters/query_order_by'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ListResult'
+                - type: object
+                  properties:
+                    reviews:
+                      description: Filtered reviews
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+  /reviews/{review_id}:
+    put:
+      summary: Update a review
+      description: Update review state to treated/not_treated.
+      operationId: updateReview
+      tags:
+      - Reviews
+      parameters:
+      - in: path
+        name: review_id
+        required: true
+        schema:
+          $ref: '#/components/schemas/ReviewId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Request body to post a reply
+              type: object
+              required:
+              - review_id
+              - state
+              properties:
+                state:
+                  description: Reply state
+                  type: string
+                  enum:
+                  - treated
+                  - not_treated
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Review'
+                - properties:
+                    state:
+                      example: treated
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /comments:
+    post:
+      tags:
+      - Reviews
+      summary: Post a reply to a review
+      description: Endpoint for replying to reviews.
+      operationId: ReplyToReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Request body to post a reply
+              type: object
+              required:
+              - review_id
+              - content
+              properties:
+                review_id:
+                  description: ID of the review for replying.
+                  type: number
+                  example: 34
+                parent_id:
+                  description: Parent comment ID for replying, limited to depth 2
+                    for Facebook comments only. Not supported by Google and TripAdvisor.
+                  type: number
+                  example: 1234
+                content:
+                  description: Content of your reply
+                  type: string
+                  format: text
+                  example: Merci ❤️
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /comments/{comment_id}:
+    put:
+      tags:
+      - Reviews
+      summary: Modify a reply to a review
+      description: Modify reply to review.
+      operationId: ModifyReplyOfReview
+      parameters:
+      - in: path
+        name: comment_id
+        required: true
+        schema:
+          $ref: '#/components/schemas/CommentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Request body to modify a reply
+              type: object
+              required:
+              - content
+              properties:
+                content:
+                  description: Content of your Reply
+                  type: string
+                  format: text
+                  example: Merci ❤️
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+    delete:
+      tags:
+      - Reviews
+      summary: Delete the given reply to a review
+      operationId: deleteReply
+      description: Delete review reply.
+      parameters:
+      - in: path
+        name: comment_id
+        required: true
+        schema:
+          $ref: '#/components/schemas/CommentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - success
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /presence_analytics/metrics:
+    get:
+      summary: Profile metrics for your business
+      description: View Google Business Profile analytics for subscribed businesses
+        with filtering, aggregation, and ordering options. Choose from impressions
+        and actions data. Filter by businesses, date, or business query. Aggregate
+        by business id or date. Order results as needed.
+      operationId: getPresenceAnalyticsMetrics
+      tags:
+      - Presence analytics
+      deprecated: false
+      parameters:
+      - $ref: '#/components/parameters/query_metrics'
+      - $ref: '#/components/parameters/query_dimensions'
+      - $ref: '#/components/parameters/parameters_query_order_by'
+      - $ref: '#/components/parameters/parameters_query_business__in'
+      - $ref: '#/components/parameters/parameters_query_business__notin'
+      - $ref: '#/components/parameters/query_city'
+      - $ref: '#/components/parameters/query_query'
+      - $ref: '#/components/parameters/query_filter_date__gte'
+      - $ref: '#/components/parameters/query_filter_date__lte'
+      - $ref: '#/components/parameters/parameters_query_page'
+      - $ref: '#/components/parameters/query_per_page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresenceAnalyticsMetricsResponse'
+              examples:
+                ? metrics=business_impressions_desktop_maps,business_impressions_desktop_search,business_impressions_mobile_maps,business_impressions_mobile_search,business_direction_requests,call_clicks,website_clicks
+                : value:
+                    page: 1
+                    count: 1
+                    max_page: 1
+                    metrics:
+                    - business_impressions_desktop_maps: 123
+                      business_impressions_desktop_search: 123
+                      business_impressions_mobile_maps: 123
+                      business_impressions_mobile_search: 123
+                      business_direction_requests: 123
+                      call_clicks: 123
+                      website_clicks: 123
+                dimensions=business & metrics=call_clicks:
+                  value:
+                    page: 1
+                    count: 3
+                    max_page: 1
+                    metrics:
+                    - call_clicks: 103
+                      business_id: 59b2645db12ff60643ef832c
+                    - call_clicks: 165
+                      business_id: 60b2645fb12ff60643ef8344
+                    - call_clicks: 28
+                      business_id: 70b2645eb12ff60643ef833c
+                dimensions=month & metrics=website_clicks & order_by=website_clicks:
+                  value:
+                    page: 1
+                    count: 2
+                    max_page: 1
+                    metrics:
+                    - website_clicks: 57
+                      date: '2019-08-01'
+                      bucket: month
+                    - website_clicks: 79
+                      date: '2019-09-01'
+                      bucket: month
+                dimensions=day,business & metrics=call_clicks & order_by=-day:
+                  value:
+                    page: 1
+                    count: 6
+                    max_page: 1
+                    metrics:
+                    - call_clicks: 48
+                      business_id: 59b2645db12ff60643ef832c
+                      date: '2019-09-30'
+                      bucket: day
+                    - call_clicks: 6
+                      business_id: 59b2645fb12ff60643ef8344
+                      date: '2019-09-30'
+                      bucket: day
+                    - call_clicks: 11
+                      business_id: 59b2645db12ff60643ef832c
+                      date: '2019-09-29'
+                      bucket: day
+                    - call_clicks: 0
+                      business_id: 59b2645fb12ff60643ef8344
+                      date: '2019-09-29'
+                      bucket: day
+                    - call_clicks: 2
+                      business_id: 59b2645db12ff60643ef832c
+                      date: '2019-09-28'
+                      bucket: day
+                    - call_clicks: 66
+                      business_id: 59b2645fb12ff60643ef8344
+                      date: '2019-09-28'
+                      bucket: day
+                dimensions=week & metrics=website_clicks & filter_date__gte=2019-09-15 & filter_date__lte=2019-09-16:
+                  value:
+                    page: 1
+                    count: 2
+                    max_page: 1
+                    metrics:
+                    - website_clicks: 32
+                      date: '2019-09-09'
+                      bucket: week
+                    - website_clicks: 164
+                      date: '2019-09-16'
+                      bucket: week
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+  /presence_analytics/keywords:
+    get:
+      summary: Profile keywords for your business
+      description: This endpoint provides monthly search keyword analytics for Google
+        Business Profile. Requires READ access and Presence Management subscription
+        for each business. Metrics include count and threshold. Filters by businesses
+        and date. Aggregates by business id and date. Orders by business id or date.
+      operationId: getPresenceAnalyticsKeywords
+      tags:
+      - Presence analytics
+      deprecated: false
+      parameters:
+      - $ref: '#/components/parameters/parameters_query_metrics'
+      - $ref: '#/components/parameters/parameters_query_dimensions'
+      - $ref: '#/components/parameters/parameters_query_order_by-2'
+      - $ref: '#/components/parameters/parameters_query_business__in'
+      - $ref: '#/components/parameters/parameters_query_filter_date__gte'
+      - $ref: '#/components/parameters/parameters_query_filter_date__lte'
+      - $ref: '#/components/parameters/parameters_query_page'
+      - $ref: '#/components/parameters/query_per_page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresenceAnalyticsKeywordsResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+  /review_analytics/metrics:
+    get:
+      tags:
+      - Review analytics
+      summary: Get Review metrics
+      operationId: getReviewAnalyticsMetrics
+      description: API endpoint for viewing review statistics for businesses subscribed
+        to Review Management. Request includes metrics, dimensions, order_by, and
+        filters. Metrics include average_rating, rating_distribution, reviews_count,
+        reply_time, reply_means, average_rating_distribution, rank. Dimensions include
+        no dimension, date dimensions, business/group dimensions, user, tag. Order_by
+        options include sorting by various metrics.
+      parameters:
+      - $ref: '#/components/parameters/parameters_query_metrics-2'
+      - $ref: '#/components/parameters/parameters_query_dimensions-2'
+      - $ref: '#/components/parameters/parameters_query_order_by-3'
+      - $ref: '#/components/parameters/parameters_query_business__in'
+      - $ref: '#/components/parameters/parameters_query_business__notin'
+      - $ref: '#/components/parameters/query_groups'
+      - $ref: '#/components/parameters/query_tags'
+      - $ref: '#/components/parameters/query_update_date__gte'
+      - $ref: '#/components/parameters/query_update_date__lte'
+      - $ref: '#/components/parameters/parameters_query_page-2'
+      - $ref: '#/components/parameters/parameters_query_per_page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ListResult'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ReviewMetricsResponse'
+              examples:
+                ?metrics=average_rating&dimensions=business:
+                  value:
+                    page: 1
+                    count: 2
+                    max_page: 1
+                    data:
+                    - dimension: 59b2645db12ff60643ef832c
+                      dimension_name: Business 1
+                      dimension_info:
+                        address_full: 190 rue Championnet
+                        city: Paris
+                        zipcode: '75018'
+                        code: PTOCODE1
+                      metrics:
+                        average_rating: 2.31
+                    - dimension: 60b2645fb12ff60643ef8344
+                      dimension_name: Business 2
+                      dimension_info:
+                        address_full: 190 rue Championnet
+                        city: Paris
+                        zipcode: '75018'
+                        code: PTOCODE2
+                      metrics:
+                        average_rating: 4.31
+                ?metrics=average_rating_distribution:
+                  value:
+                    page: 1
+                    count: 1
+                    max_page: 1
+                    data:
+                    - dimension: null
+                      metrics:
+                        average_rating_distribution:
+                          4.3-5: 274
+                          3.8-4.3: 124
+                          3-3.8: 62
+                          0-3: 5
+                          'NULL': 4
+                ?metrics=average_rating,reviews_count&dimensions=day&filter_date__lte=2024-02-13&filter_date__gte=2024-02-11:
+                  value:
+                    page: 1
+                    count: 3
+                    max_page: 1
+                    data:
+                    - dimension: '2024-02-11'
+                      metrics:
+                        average_rating: 3.31
+                        reviews_count: 123
+                    - dimension: '2024-02-12'
+                      metrics:
+                        average_rating: 3.34
+                        reviews_count: 123
+                    - dimension: '2024-02-13'
+                      metrics:
+                        average_rating: 3.77
+                        reviews_count: 123
+                ?metrics=reply_time,reply_means&dimensions=user:
+                  value:
+                    page: 1
+                    count: 1
+                    max_page: 1
+                    data:
+                    - dimension: 64477ae0264810a01c0a4edf
+                      dimension_name: User 1
+                      metrics:
+                        reply_time:
+                          fast: 11
+                          slow: 32
+                          not_replied: 0
+                          total: 43
+                        reply_means:
+                          ai_suggestion: 20
+                          manual: 3
+                          auto_reply: 0
+                          reply_template: 20
+                          total: 43
+                ?metrics=rank,rating_distribution&dimensions=group&order_by=-ratio__rating_distribution__5&groups=1244,1245,1246:
+                  value:
+                    page: 1
+                    count: 3
+                    max_page: 1
+                    data:
+                    - dimension: 1244
+                      dimension_name: Group 1244
+                      metrics:
+                        rank: 1
+                        rating_distribution:
+                          '1': 0
+                          '2': 0
+                          '3': 0
+                          '4': 0
+                          '5': 65
+                    - dimension: 1245
+                      dimension_name: Group 1245
+                      metrics:
+                        rank: 1
+                        rating_distribution:
+                          '1': 0
+                          '2': 0
+                          '3': 11
+                          '4': 32
+                          '5': 65
+                    - dimension: 60b2645fb12ff60643ef8344
+                      dimension_name: Group 1246
+                      metrics:
+                        rank: 3
+                        rating_distribution:
+                          '1': 19
+                          '2': 0
+                          '3': 0
+                          '4': 0
+                          '5': 0
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+  /reviews/stats:
+    get:
+      tags:
+      - Review analytics
+      summary: Global reviews statistics
+      operationId: getReviewAnalytics
+      deprecated: true
+      description: Endpoint to view global reviews statistics for businesses subscribed
+        to Review Management. Filters by date, businesses, and keywords. Response
+        aggregated based on selected filters. For analytics evolution over time, refer
+        to Qualitative Evolution and Quantitative Evolution endpoints.
+      parameters:
+      - $ref: '#/components/parameters/query_review_business__in'
+      - $ref: '#/components/parameters/query_keywords'
+      - $ref: '#/components/parameters/query_review_update_date__gte'
+      - $ref: '#/components/parameters/query_review_update_date__lte'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewsStatisticsResponse'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /reviews/qualitative-evolution:
+    get:
+      tags:
+      - Review analytics
+      summary: Qualitative evolution
+      operationId: getQualitativeEvolution
+      deprecated: true
+      description: 'Endpoint: Get qualitative evolution of reviews rating for subscribed
+        businesses in Review Management. Returns reviews average rating by time range
+        buckets. Filters available for date, businesses, and keywords.'
+      parameters:
+      - $ref: '#/components/parameters/query_review_bucket'
+      - $ref: '#/components/parameters/query_review_cumulative'
+      - $ref: '#/components/parameters/query_review_business__in'
+      - $ref: '#/components/parameters/query_keywords'
+      - $ref: '#/components/parameters/query_review_update_date__gte'
+      - $ref: '#/components/parameters/query_review_update_date__lte'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                example:
+                - date: '2019-11-29'
+                  average: 4.54
+                  added: 50
+                  cum_sum: 70
+                - date: '2019-12-05'
+                  average: 4.34
+                  added: 34
+                  cum_sum: 104
+                - date: '2019-12-12'
+                  average: 4.41
+                  added: 4
+                  cum_sum: 108
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: datetype
+                      description: Start date of the bucket
+                    average:
+                      type: number
+                      format: float
+                      description: Average rating.
+                    added:
+                      type: integer
+                      description: Number of reviews added in current bucket.
+                    cum_sum:
+                      type: number
+                      format: float
+                      description: Cumulative sum of reviews count.
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+  /reviews/quantitative-evolution:
+    get:
+      tags:
+      - Review analytics
+      summary: Quantitative evolution
+      operationId: getQuantitativeEvolution
+      deprecated: true
+      description: 'Endpoint: View cumulative sum of reviews for businesses subscribed
+        to Review Management. Filters: date, businesses, keywords.'
+      parameters:
+      - $ref: '#/components/parameters/query_review_bucket'
+      - $ref: '#/components/parameters/query_review_business__in'
+      - $ref: '#/components/parameters/query_keywords'
+      - $ref: '#/components/parameters/query_review_update_date__gte'
+      - $ref: '#/components/parameters/query_review_update_date__lte'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                example:
+                - date: '2019-11-29'
+                  added: 50
+                  previous_sum: 20
+                  cum_sum: 70
+                - date: '2019-12-05'
+                  added: 34
+                  previous_sum: 70
+                  cum_sum: 104
+                - date: '2019-12-12'
+                  added: 4
+                  previous_sum: 104
+                  cum_sum: 108
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      format: datetype
+                      description: Start date of the bucket
+                    added:
+                      type: integer
+                      description: Number of reviews added in current bucket.
+                    previous_sum:
+                      type: number
+                      description: Cumulative sum of previous reviews.
+                      format: float
+                    cum_sum:
+                      type: number
+                      format: float
+                      description: Cumulative sum of reviews count.
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+webhooks:
+  businessCreated:
+    post:
+      operationId: business_created
+      tags:
+      - Webhooks
+      summary: New Business Created
+      description: Event triggered on Business creation in Partoo Database. Payload
+        includes event type and business details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - business_created
+                payload:
+                  type: object
+                  properties:
+                    business:
+                      $ref: '#/components/schemas/Business'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry webhook delivery for errors 500-599 up to 5 times with
+            exponential backoff. Events may not be received in order.
+      security: []
+  businessUpdated:
+    post:
+      operationId: business_updated
+      tags:
+      - Webhooks
+      summary: Business Updated
+      description: 'Event triggered on Business update in Partoo DB. Payload includes
+        event type and business contents. Note: Hook may trigger on internal changes
+        not reflected in payload.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - business_updated
+                payload:
+                  type: object
+                  properties:
+                    business:
+                      $ref: '#/components/schemas/Business'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry 500-599 errors up to 5 times with exponential backoff
+            from webhook system. Events may not be received in order.
+      security: []
+  businessDeleted:
+    post:
+      operationId: business_deleted
+      tags:
+      - Webhooks
+      summary: Business Deleted
+      description: Event triggered when Business is removed from Partoo Database.
+        Payload includes event type and business id.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - business_deleted
+                payload:
+                  type: object
+                  properties:
+                    business_id:
+                      $ref: '#/components/schemas/BusinessId'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry webhook delivery for errors 500-599 up to 5 times with
+            exponential backoff. Events may not be received in order.
+      security: []
+  messageCreated:
+    post:
+      operationId: message_created
+      tags:
+      - Webhooks
+      summary: New Message Created
+      description: Event triggered on new message in conversation, payload includes
+        event type, message content, and conversation details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - message_created
+                payload:
+                  $ref: '#/components/schemas/MessageCreatedEvent'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry for errors 500-599 up to 5 times with exponential backoff;
+            events may not be received in order.
+      security: []
+  messageReceived:
+    post:
+      operationId: message_received
+      tags:
+      - Webhooks
+      summary: New message received
+      deprecated: true
+      description: Deprecated. Use [New Message Created](#operation/message_created)
+        webhook. Filter on `sender_type=Consumer` and `status=Success`. Triggered
+        when a business receives a new message from a Consumer. Payload includes event
+        type, message content, and conversation details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  $ref: '#/components/schemas/MessageReceivedEvent'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry for errors 500-599 up to 5 times with exponential backoff
+            from webhook system. Events may not be received in order.
+      security: []
+  messageUpdated:
+    post:
+      operationId: message_updated
+      tags:
+      - Webhooks
+      summary: Message updated
+      description: Event triggered when a message field is updated. Messages start
+        as 'Sending', change to 'Success' on successful send, or 'Failed' if send
+        fails. Payload includes event type, updated message content, and conversation
+        details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - message_updated
+                payload:
+                  $ref: '#/components/schemas/MessageCreatedEvent'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Retry up to 5 times for errors 500-599 with exponential backoff.
+            Events may not be received in order.
+      security: []
+  leadReceived:
+    post:
+      operationId: lead_received
+      tags:
+      - Webhooks
+      summary: Lead Received
+      description: Event triggered when Lead added in Partoo Database. Payload includes
+        event type and lead contents.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - lead_received
+                payload:
+                  type: object
+                  $ref: '#/components/schemas/LeadWebhook'
+      responses:
+        '200':
+          description: Return 200 status for successful event reception.
+        '500':
+          description: Error 500-599 triggers up to 5 retries with exponential backoff
+            from webhook system. Events may not be received in order.
+      security: []
+components:
+  schemas:
+    current_page:
+      type: integer
+      description: Current page number
+      example: 1
+    max_page:
+      type: integer
+      description: Last page number
+      example: 10
+    count:
+      type: integer
+      description: Count of filtered resources
+      example: 287
+    ListResult:
+      type: object
+      properties:
+        page:
+          $ref: '#/components/schemas/current_page'
+        max_page:
+          $ref: '#/components/schemas/max_page'
+        count:
+          $ref: '#/components/schemas/count'
+    BusinessId:
+      description: Business id
+      type: string
+      example: 5409c35a97bbc544d8e26737
+    BusinessStatusFilter:
+      description: API defines business status as `Open`, `Closed`, `Opening Soon`,
+        or `Temporarily closed`. Use filter `status=open,opening_soon` to get all
+        open businesses.
+      type: string
+      enum:
+      - open
+      - closed
+      - opening_soon
+      - temporarily_closed
+      default: open
+      example: open
+    FeatureEnum:
+      enum:
+      - diffusion
+      - feedback_management
+      - messages
+      - posts
+      - review_invite
+      - review_management
+    BusinessCode:
+      description: Unique store code for business, auto-generated if not provided.
+      type: string
+      example: CS-75019
+    BusinessStatus:
+      description: 'Defines business status: <code>open</code> for operational, <code>closed</code>
+        for permanent closure, <code>temporarily_closed</code> for temporary closure
+        (>1 week), <code>specific_hours</code> for shorter closures.'
+      type: string
+      enum:
+      - open
+      - closed
+      - temporarily_closed
+      default: open
+      example: open
+    BusinessOpeningDate:
+      description: opening_date must be in ISO 8601 format (YYYY-MM-DD) and within
+        one year of the current date.
+      type: string
+      format: YYYY-MM-DD
+      example: '2025-01-01'
+    BusinessOrgId:
+      description: Partoo's unique organization identifier for aggregating businesses.
+      type: integer
+      example: 42
+    GroupId:
+      description: The API returns the group ID for a business within an organization
+        with multiple groups. Each business belongs to one group.
+      type: integer
+      example: 23
+      deprecated: true
+    groups:
+      description: List of Group IDs business belongs to. See Groups and Sections
+        description.
+      type: array
+      items:
+        type: integer
+      example:
+      - 1
+      - 2
+      - 3
+    BusinessName:
+      description: Business name for publishing platforms.
+      type: string
+      minLength: 1
+      example: Corner shop
+    AddressFull:
+      description: 'API for business address: e.g. ''130 Rue du Mont-Cenis''.'
+      type:
+      - string
+      - 'null'
+      example: 12 bis rue du coquelicot
+    Address2:
+      description: Complement of address for business location.
+      type:
+      - string
+      - 'null'
+    BusinessCity:
+      description: Business location city.
+      type:
+      - string
+      - 'null'
+      example: Paris
+    BusinessZipcode:
+      description: Zipcode for business address, optional if country does not require.
+      type:
+      - string
+      - 'null'
+      example: '75019'
+    BusinessRegion:
+      description: Region of business location, optional for certain countries like
+        Italy and Spain.
+      type:
+      - string
+      - 'null'
+      example: Ile-de-France
+    BusinessCountry:
+      description: Business country in ISO 3166 alpha2 code format.
+      type: string
+      example: FR
+    BusinessDefaultLang:
+      description: Business default language based on country or set as English by
+        default.
+      type: string
+      example: fr
+    BusinessCategories:
+      minItems: 1
+      description: 'API: List of category ids mapped to business. At least one category
+        required. See [Categories section](link) for more info.'
+      type: array
+      items:
+        type: string
+      example:
+      - gcid:restaurant
+      - gcid:fast_food_restaurant
+      - gcid:hamburger_restaurant
+    TimeWindow:
+      description: Time window
+      type: string
+      pattern: ^([0-1][0-9]|2[0-3]):([0-5][0-9])-([0-1][0-9]|2[0-3]):([0-5][0-9])$
+      example: 10:00-14:00
+    TimeSlotReference:
+      description: Default time period for setting open hours of a day in Partoo's
+        interface.
+      type: array
+      items:
+        $ref: '#/components/schemas/TimeWindow'
+    Day:
+      description: Open `[10:00-14:00, 18:00-00:00]`, closed `[]`.
+      type: array
+      items:
+        $ref: '#/components/schemas/TimeWindow'
+      example:
+      - 10:00-14:00
+    OpenHours:
+      description: 'API for business opening hours by weekday in its timezone. Specify
+        time slots as strings. Example: {"monday": ["08:00-15:00", "18:00-23:00"]}.
+        Use ["00:00-23:59"] for 24-hour opening. Not mandatory, but required for some
+        platforms like Google. Schedule needed for each day if provided.'
+      type: object
+      required:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+      - friday
+      - saturday
+      - sunday
+      properties:
+        monday:
+          $ref: '#/components/schemas/Day'
+        tuesday:
+          $ref: '#/components/schemas/Day'
+        wednesday:
+          $ref: '#/components/schemas/Day'
+        thursday:
+          $ref: '#/components/schemas/Day'
+        friday:
+          $ref: '#/components/schemas/Day'
+        saturday:
+          $ref: '#/components/schemas/Day'
+        sunday:
+          $ref: '#/components/schemas/Day'
+    SpecificHours:
+      description: 'API for exceptional business hours:
+
+        - Define exceptional opening/closing times in business timezone.
+
+        - Specify exceptional days (e.g., bank holidays, COVID-19).
+
+        - Use ''open'' and ''close'' to list exceptional days.
+
+        - Each entry includes ''starts_at'' and ''ends_at'' dates.
+
+        - ''open_hours'' specifies actual time slots for opening days.'
+      type: object
+      required:
+      - open
+      - close
+      properties:
+        open:
+          type: array
+          items:
+            type: object
+            properties:
+              starts_at:
+                type: string
+                pattern: date
+                example: '2020-01-20'
+              ends_at:
+                type: string
+                pattern: date
+                example: '2020-01-20'
+              open_hours:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeWindow'
+        close:
+          type: array
+          items:
+            type: object
+            properties:
+              starts_at:
+                type: string
+                pattern: date
+                example: '2020-01-20'
+              ends_at:
+                type: string
+                pattern: date
+                example: '2020-01-22'
+    BusinessShortDescription:
+      description: Short description of business in local language limited to 80 characters.
+      type: string
+      example: lorem ipsum
+    BusinessLongDescription:
+      description: Detailed business description limited to 750 characters in local
+        language.
+      type: string
+      example: lorem ipsum dolor sit amet
+    BusinessWebsite:
+      description: API for retrieving company website URL.
+      type: string
+      format: uri
+      example: https://www.corner-shop.co/
+    BusinessFacebookPage:
+      description: Business Facebook page url
+      type: string
+      format: uri
+      example: https://www.facebook.com/the-corner-shop
+    BusinessTwitter:
+      description: Business twitter page url
+      type: string
+      format: uri
+      example: https://www.twitter.com/the-corner-shop
+    BusinessNationalIdentificationNumber:
+      description: API for retrieving the National Identification Number of a business
+        in a specific country.
+      type: string
+    Contact:
+      description: Business contact
+      type: object
+      properties:
+        name:
+          description: Contact full name
+          type: string
+          example: Hubert Bonisseur de la Bath
+        email:
+          description: Contact email
+          type: string
+          format: email
+          example: hubert@oss117.fr
+        phone_numbers:
+          description: Contact phone numbers in E.164 format preferred.
+          type: array
+          items:
+            type: string
+          example:
+          - '+33302060628'
+        fax:
+          description: Contact fax
+          type: string
+          example: '+33302060629'
+    BusinessContacts:
+      description: Define contact information for business inquiries.
+      type: array
+      items:
+        $ref: '#/components/schemas/Contact'
+    Photos:
+      description: Business photos for each business can have multiple photos.
+      type: object
+      properties:
+        LOGO:
+          description: API for brand logo image. Displayed on Google Business Profile
+            for businesses with basic information.
+          type: string
+          format: uri
+        primary:
+          description: Main photo URL representing cover photo on profile.
+          type: string
+          format: uri
+        secondary:
+          description: API for additional business photos.
+          type: array
+          items:
+            type: string
+            format: uri
+    Latitude:
+      description: 'Latitude format: Decimals separated by a dot, not a comma.'
+      type:
+      - number
+      - 'null'
+      format: double
+      example: -3.585993
+    Longitude:
+      description: 'Longitude format: Decimals separated by dot, not comma.'
+      type:
+      - number
+      - 'null'
+      format: double
+      example: 47.870341
+    SubscriptionActive:
+      type: object
+      required:
+      - active
+      properties:
+        active:
+          type: boolean
+          description: Product has been activated
+    Subscriptions:
+      deprecated: true
+      description: Deprecated business product subscriptions API. Use `features` instead.
+      type: object
+      required:
+      - presence_management
+      - review_booster
+      - review_management
+      - messages
+      properties:
+        presence_management:
+          $ref: '#/components/schemas/SubscriptionActive'
+          description: Check business subscription for Presence Management.
+        review_management:
+          $ref: '#/components/schemas/SubscriptionActive'
+          description: Check business subscription status for Review Management.
+        review_booster:
+          $ref: '#/components/schemas/SubscriptionActive'
+          description: Check business Review Booster subscription.
+        messages:
+          $ref: '#/components/schemas/SubscriptionActive'
+          description: Check business subscription to Business Message.
+      example:
+        presence_management:
+          active: true
+        review_management:
+          active: true
+        review_booster:
+          active: false
+        messages:
+          active: false
+    Feature:
+      allOf:
+      - $ref: '#/components/schemas/FeatureEnum'
+      type: string
+      description: Business feature name
+    Features:
+      description: 'List of business'' features.
+
+        '
+      type: array
+      items:
+        $ref: '#/components/schemas/Feature'
+      example:
+      - business_edition
+      - diffusion
+      - review_management
+      - review_invite
+      - messages
+    CustomFields.Field.Base:
+      description: A Custom Field
+      type: object
+      properties:
+        name:
+          description: Name of the custom field
+          type: string
+        type:
+          description: 'Possible values: BOOLEAN, INTEGER, TEXT, FLOAT, SINGLE_SELECT,
+            MULTIPLE_SELECT, MULTIPLE_SELECT_IMAGE, IMAGES_UPLOADER.'
+          type: string
+        id:
+          description: Id of the custom field
+          type: integer
+        order:
+          type: integer
+    CustomFields.Field.Text:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type:
+            - string
+            - 'null'
+    CustomFields.Field.Integer:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type:
+            - integer
+            - 'null'
+    CustomFields.Field.Number:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type:
+            - number
+            - 'null'
+    CustomFields.Field.Boolean:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type:
+            - boolean
+            - 'null'
+    CustomFields.Field.SingleSelect:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, may be NULL.
+            type:
+            - string
+            - 'null'
+    CustomFields.Field.MultiSelect:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, may be NULL.
+            type: array
+            items:
+              type: string
+    CustomFields.Field.MultiSelectImage:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type: array
+            items:
+              type: string
+    CustomFieldValuesImagesUploader:
+      description: Custom field for uploading images.
+      type: object
+      properties:
+        text_field:
+          type: string
+        max_length:
+          type: number
+      example:
+      - text_field: name 1
+        max_length: 20
+      - text_field: name 2
+        max_length: 30
+    CustomFields.Field.ImagesUploader:
+      allOf:
+      - $ref: '#/components/schemas/CustomFields.Field.Base'
+      - properties:
+          value:
+            description: Value for Custom Field, can be NULL.
+            type: array
+            items:
+              $ref: '#/components/schemas/CustomFieldValuesImagesUploader'
+    CustomFields.Array:
+      description: Custom Fields for Business to add unique configurable fields beyond
+        standard fields.
+      type: array
+      items:
+        oneOf:
+        - $ref: '#/components/schemas/CustomFields.Field.Integer'
+        - $ref: '#/components/schemas/CustomFields.Field.Number'
+        - $ref: '#/components/schemas/CustomFields.Field.Text'
+        - $ref: '#/components/schemas/CustomFields.Field.Boolean'
+        - $ref: '#/components/schemas/CustomFields.Field.MultiSelect'
+        - $ref: '#/components/schemas/CustomFields.Field.MultiSelectImage'
+        - $ref: '#/components/schemas/CustomFields.Field.SingleSelect'
+        - $ref: '#/components/schemas/CustomFields.Field.ImagesUploader'
+        discriminator:
+          propertyName: type
+          mapping:
+            TEXT: '#/components/schemas/CustomFields.Field.Text'
+            INTEGER: '#/components/schemas/CustomFields.Field.Integer'
+            FLOAT: '#/components/schemas/CustomFields.Field.Number'
+            BOOLEAN: '#/components/schemas/CustomFields.Field.Boolean'
+            SINGLE_SELECT: '#/components/schemas/CustomFields.Field.SingleSelect'
+            MULTIPLE_SELECT: '#/components/schemas/CustomFields.Field.MultiSelect'
+            MULTIPLE_SELECT_IMAGE: '#/components/schemas/CustomFields.Field.MultiSelectImage'
+            IMAGES_UPLOADER: '#/components/schemas/CustomFields.Field.ImagesUploader'
+      example:
+      - id: 1
+        type: BOOLEAN
+        name: Parking
+        value: true
+        order: 1
+      - id: 2
+        type: TEXT
+        name: ManagerName
+        value: toto
+        order: 2
+      - id: 3
+        type: TEXT
+        name: Supervisor
+        value: null
+        order: 2
+      - id: 4
+        type: INTEGER
+        name: Surface
+        value: 2
+        order: 3
+      - id: 5
+        type: FLOAT
+        name: DistanceFromSubway
+        value: 2.55
+        order: 4
+      - id: 6
+        type: SINGLE_SELECT
+        name: Level
+        value: two
+        order: 4
+      - id: 7
+        type: MULTIPLE_SELECT
+        name: Services
+        value:
+        - one
+        - two
+        order: 5
+      - id: 8
+        type: MULTIPLE_SELECT_IMAGE
+        name: BannerImage
+        value:
+        - image 1
+        - image 2
+        order: 6
+      - id: 9
+        type: IMAGES_UPLOADER
+        name: TeamMembers
+        value:
+        - url: image1
+          texts:
+            name1: value 1
+            name2: value 2
+        order: 7
+    BusinessCompletionRate:
+      description: API calculates business completion rate based on filled fields.
+        Updates may take up to 24h.
+      type: integer
+      example: 77
+    Promo:
+      deprecated: true
+      description: Business promotions
+      type: object
+      required:
+      - title
+      - description
+      - begin
+      - end
+      properties:
+        title:
+          type: string
+          description: Promo title
+        description:
+          type: string
+          description: Promo description
+        term_of_use:
+          type: string
+          description: Promo term of use
+        additional_informations:
+          type: string
+          description: Promo additional informations
+        begin:
+          type: number
+          description: Promo start timestamp
+        end:
+          type: number
+          description: Promo end timestamp
+        images:
+          type: array
+          description: Promo images to be displayed
+          items:
+            type: string
+            format: uri
+        client_offer_url:
+          description: Promo URL
+          type: string
+          format: uri
+        promo_url:
+          description: URL of the website
+          type: string
+          format: uri
+    BusinessPromos:
+      deprecated: true
+      type: array
+      items:
+        $ref: '#/components/schemas/Promo'
+    BusinessWithCustomFields:
+      description: Partoo App Business
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/BusinessId'
+        created:
+          description: Timestamp (seconds) of business creation.
+          type: number
+          format: float
+          example: 1409925979.5
+        modified:
+          description: Timestamp of last business modification, excluding Custom Fields
+            or related objects.
+          type: number
+          format: float
+          example: 1561335111.681374
+        code:
+          $ref: '#/components/schemas/BusinessCode'
+        status:
+          $ref: '#/components/schemas/BusinessStatus'
+        opening_date:
+          $ref: '#/components/schemas/BusinessOpeningDate'
+        org_id:
+          $ref: '#/components/schemas/BusinessOrgId'
+        group_id:
+          $ref: '#/components/schemas/GroupId'
+        groups:
+          $ref: '#/components/schemas/groups'
+        name:
+          $ref: '#/components/schemas/BusinessName'
+        address:
+          description: API returns business address, same as `address_full` field
+            for historical reasons. Prefer using `address_full`.
+          type:
+          - string
+          - 'null'
+        address_full:
+          $ref: '#/components/schemas/AddressFull'
+        address2:
+          $ref: '#/components/schemas/Address2'
+        city:
+          $ref: '#/components/schemas/BusinessCity'
+        zipcode:
+          $ref: '#/components/schemas/BusinessZipcode'
+        region:
+          $ref: '#/components/schemas/BusinessRegion'
+        country:
+          $ref: '#/components/schemas/BusinessCountry'
+        default_lang:
+          $ref: '#/components/schemas/BusinessDefaultLang'
+        categories:
+          $ref: '#/components/schemas/BusinessCategories'
+        time_slot_reference:
+          $ref: '#/components/schemas/TimeSlotReference'
+        open_hours:
+          $ref: '#/components/schemas/OpenHours'
+        specific_hours:
+          $ref: '#/components/schemas/SpecificHours'
+        description_short:
+          $ref: '#/components/schemas/BusinessShortDescription'
+        description_long:
+          $ref: '#/components/schemas/BusinessLongDescription'
+        website_url:
+          $ref: '#/components/schemas/BusinessWebsite'
+        facebook_url:
+          $ref: '#/components/schemas/BusinessFacebookPage'
+        twitter_url:
+          $ref: '#/components/schemas/BusinessTwitter'
+        google_location_id:
+          description: Google Location ID for business linkage.
+          type: string
+        facebook_page_id:
+          description: Facebook Location ID for business affiliation.
+          type: string
+        national_identification_number:
+          $ref: '#/components/schemas/BusinessNationalIdentificationNumber'
+        logo_url:
+          description: Business LOGO URL
+          type: string
+          format: uri
+        contacts:
+          $ref: '#/components/schemas/BusinessContacts'
+        photos:
+          $ref: '#/components/schemas/Photos'
+        lat:
+          $ref: '#/components/schemas/Latitude'
+        long:
+          $ref: '#/components/schemas/Longitude'
+        subscriptions:
+          $ref: '#/components/schemas/Subscriptions'
+        features:
+          $ref: '#/components/schemas/Features'
+        custom_fields:
+          $ref: '#/components/schemas/CustomFields.Array'
+        completion_rate:
+          $ref: '#/components/schemas/BusinessCompletionRate'
+        promos:
+          $ref: '#/components/schemas/BusinessPromos'
+    BusinessReach:
+      description: Defines business type as either LOCAL (physical entity with address)
+        or GLOBAL (brand).
+      type: string
+      enum:
+      - LOCAL
+      - GLOBAL
+      default: LOCAL
+      example: LOCAL
+    RequiredBusinessCity:
+      description: City of business location. Required if 'reach' is not 'LOCAL'.
+      type: string
+      example: Paris
+    BusinessLatitude:
+      description: 'Latitude format: Decimals separated by dot, not comma.'
+      type: number
+      format: double
+      example: -3.585993
+    BusinessLongitude:
+      description: 'Longitude format: Decimals separated by dot, not comma.'
+      type: number
+      format: double
+      example: 47.870341
+    BusinessContactsCreate:
+      description: Define contact information for business inquiries.
+      type: array
+      items:
+        $ref: '#/components/schemas/Contact'
+    CustomFields.Update:
+      description: Custom Fields for Business, unique and configurable fields for
+        organization needs.
+      type: object
+      additionalProperties:
+        description: Replace custom field with specified name, ensure value matches
+          field type. Set to NULL to clear field.
+      example:
+        Parking: true
+        ManagerName: toto
+        Surface: 35
+        DistanceFromSubway: 1.5
+        Level: one
+        Services:
+        - DisabledAccess
+        - FreeParking
+        BannerImage:
+        - image 1
+        - image 2
+        TeamMembers:
+        - url: image1
+          texts:
+            name1: value 1
+            name2: value 2
+    RequestStatus:
+      description: Request status
+      type: string
+      enum:
+      - success
+    Attributes.Field.Base:
+      description: A Google Attribute
+      type: object
+      properties:
+        gmb_id:
+          description: Google id of the attribute
+          type: string
+        type:
+          description: 'Possible values: "BOOL", "ENUM", "REPEATABLE_ENUM", "URL",
+            "REPEATABLE_URL".'
+          type: string
+    Attributes.Field.BOOL:
+      allOf:
+      - $ref: '#/components/schemas/Attributes.Field.Base'
+      - properties:
+          value:
+            description: Attribute value, nullable.
+            type:
+            - boolean
+            - 'null'
+    Attributes.Field.ENUM:
+      allOf:
+      - $ref: '#/components/schemas/Attributes.Field.Base'
+      - properties:
+          value:
+            description: Attribute value, nullable.
+            type:
+            - string
+            - 'null'
+    Attributes.Field.REPEATABLE_ENUM:
+      allOf:
+      - $ref: '#/components/schemas/Attributes.Field.Base'
+      - properties:
+          value:
+            type:
+            - object
+            - 'null'
+            description: Attribute value, nullable.
+            properties:
+              set_values:
+                type: array
+                description: Options for Attribute, can be empty.
+                items:
+                  type: string
+              unset_values:
+                type: array
+                description: Options for false Attributes, can be empty.
+                items:
+                  type: string
+    Attributes.Field.URL:
+      allOf:
+      - $ref: '#/components/schemas/Attributes.Field.Base'
+      - properties:
+          value:
+            description: Attribute value, nullable.
+            type:
+            - string
+            - 'null'
+    Attributes.Field.REPEATABLE_URL:
+      allOf:
+      - $ref: '#/components/schemas/Attributes.Field.Base'
+      - properties:
+          value:
+            description: Attribute value, nullable.
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+            deprecated: true
+    BusinessFields.Section:
+      description: Business Fields permissions.
+      type: object
+      properties:
+        name:
+          description: API for a section with dynamic field structure.
+          type: string
+    BusinessFields.Field:
+      description: Business Field
+      type: object
+      properties:
+        name:
+          description: Name of the field
+          type: string
+        enabled:
+          description: 'Field permission for current user: enabled/disabled.'
+          type: boolean
+        enabled_for_subroles:
+          description: Field permission for users with more restrictive roles compared
+            to current user. Examples for ORG_ADMIN and PROVIDER roles provided.
+          type: boolean
+    BusinessFields.SectionNormal:
+      allOf:
+      - $ref: '#/components/schemas/BusinessFields.Section'
+      - description: Business Fields Section
+        type: object
+        properties:
+          fields:
+            type: array
+            items:
+              $ref: '#/components/schemas/BusinessFields.Field'
+    CustomFields.Metadata:
+      allOf:
+      - $ref: '#/components/schemas/BusinessFields.Field'
+      - description: Business Fields permissions
+        type: object
+        properties:
+          type:
+            description: 'Custom field type: "TEXT", "INTEGER", "FLOAT", "BOOLEAN",
+              "SINGLE_SELECT", "MULTIPLE_SELECT", "MULTIPLE_SELECT_IMAGE", "IMAGES_UPLOADER".'
+            type: string
+            enum:
+            - TEXT
+            - INTEGER
+            - FLOAT
+            - BOOLEAN
+            - SINGLE_SELECT
+            - MULTIPLE_SELECT
+            - MULTIPLE_SELECT_IMAGE
+            - IMAGES_UPLOADER
+          id:
+            description: ID of the custom field.
+            type: integer
+          order:
+            type: integer
+    BusinessFields.SectionCustomFields:
+      allOf:
+      - $ref: '#/components/schemas/BusinessFields.Section'
+      - description: Custom fields for business information.
+        type: object
+        properties:
+          fields:
+            type: array
+            items:
+              $ref: '#/components/schemas/CustomFields.Metadata'
+    Lang:
+      description: Application language options.
+      type: string
+      enum:
+      - fr
+      - en
+      - es
+      - it
+      - pt-br
+      - de
+      - ar
+      - nl
+      - pl
+      - cs
+      - ca
+      - sk
+      - pt
+      - lv
+      - ro
+      - bg
+      - hu
+      example: fr
+    MessageContentType:
+      type: string
+      enum:
+      - Text
+      - Image
+      - IgStoryReply
+      - IgStoryMention
+      - Unsupported
+      description: 'Message type enum with values: Text, Image, IgStoryReply, IgStoryMention,
+        Unsupported. Handle new values gracefully by displaying "Unhandled content"
+        to the user.'
+    SenderType:
+      type: string
+      enum:
+      - User
+      - Consumer
+      - Metadata
+      description: 'Describes sender types for messages: "User" for Business, "Consumer"
+        for client, "Metadata" for special messages. Handle new sender types gracefully.'
+    MessageStatus:
+      type: string
+      enum:
+      - Sending
+      - Success
+      - Failed
+      description: 'API tracks message delivery status: "Sending" when created, "Success"
+        when sent successfully, "Failed" if send fails. Retry with [/retry endpoint](#operation/retrySendMessage).'
+    TextMessageContent:
+      title: Text
+      type: string
+      description: The text of the message.
+    ImageMessageContent:
+      title: Image
+      type: string
+      format: url
+      description: The url of the image.
+    IgStoryReplyMessageContent:
+      type: object
+      title: IgStoryReply
+      properties:
+        url:
+          type: string
+          format: url
+          description: URL of replied story.
+        content:
+          type: string
+          description: Reply text or image URL.
+        content_type:
+          type: string
+          enum:
+          - Image
+          - Text
+          description: 'Description: Type of reply content.'
+        id:
+          type: string
+          description: The Instagram ID of the story.
+    IgStoryMentionMessageContent:
+      type: string
+      title: IgStoryMention
+      format: url
+      description: API for retrieving story URL.
+    UnsupportedMessageContent:
+      type: object
+      title: Unsupported
+      properties:
+        type:
+          type: string
+          enum:
+          - video
+          - audio
+          - unknown
+    Message:
+      type: object
+      title: Message
+      properties:
+        id:
+          type: integer
+          description: The id of the message.
+        conversation_id:
+          type: integer
+          description: Parent conversation ID.
+        date:
+          type: string
+          description: Message timestamp in ISO 8601 format.
+          example: '2023-01-31 16:22:17.327878+00:00'
+        content_type:
+          $ref: '#/components/schemas/MessageContentType'
+        sender_type:
+          $ref: '#/components/schemas/SenderType'
+        sender_label:
+          type:
+          - string
+          - 'null'
+          description: Sender's name.
+          example: Jane Doe
+        status:
+          $ref: '#/components/schemas/MessageStatus'
+        is_deleted:
+          type: boolean
+          description: Message deletion available for "Instagram" messages only.
+          example: false
+        content:
+          oneOf:
+          - $ref: '#/components/schemas/TextMessageContent'
+          - $ref: '#/components/schemas/ImageMessageContent'
+          - $ref: '#/components/schemas/IgStoryReplyMessageContent'
+          - $ref: '#/components/schemas/IgStoryMentionMessageContent'
+          - $ref: '#/components/schemas/UnsupportedMessageContent'
+        user_id:
+          type:
+          - string
+          - 'null'
+          description: Retrieve sender's user id for messages in Partoo app.
+    MessagingPartner:
+      description: API for message channel with dynamic enum values.
+      type: string
+      enum:
+      - Google
+      - Facebook
+      - Instagram
+      - SMS
+      example: Google
+    PostMessage:
+      required:
+      - conversation_id
+      - content_type
+      - date
+      properties:
+        conversation_id:
+          type: integer
+          description: The id of the conversation
+    PostTextMessage:
+      required:
+      - content
+      title: Text
+      allOf:
+      - $ref: '#/components/schemas/PostMessage'
+      - properties:
+          content_type:
+            type: string
+            enum:
+            - Text
+          content:
+            type: string
+            description: The text to send
+    PostImageUrlMessage:
+      required:
+      - url
+      title: Image Url
+      allOf:
+      - $ref: '#/components/schemas/PostMessage'
+      - properties:
+          content_type:
+            type: string
+            enum:
+            - Image
+          url:
+            type: string
+            description: The url of the image to send
+    PostImageMessage:
+      required:
+      - image
+      allOf:
+      - $ref: '#/components/schemas/PostMessage'
+      - properties:
+          content_type:
+            type: string
+            enum:
+            - Image
+          image:
+            type: string
+            description: The image to send
+    Page:
+      description: The current page number.
+      type: integer
+      example: 1
+    MaxPage:
+      description: Returns total number of pages.
+      type: integer
+      example: 1
+    AttributeType:
+      description: Type of the Attribute
+      type: string
+      enum:
+      - URL
+      - REPEATABLE_URL
+      - BOOL
+      - ENUM
+      - REPEATABLE_ENUM
+    AttributeGmbId:
+      description: Google Id of the attribute
+      type: string
+      example: gcid:restaurant
+    AttributeName:
+      description: Attribute name in chosen language.
+      type: string
+      example: Delivery
+    AttributeOrder:
+      type: integer
+      example: 1
+    Attribute:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        gmb_id:
+          $ref: '#/components/schemas/AttributeGmbId'
+        name:
+          $ref: '#/components/schemas/AttributeName'
+        order:
+          $ref: '#/components/schemas/AttributeOrder'
+    AttributesGroupName:
+      type: string
+      description: Name of the attribute group
+      example: Services disponibles
+    AttributesGroupOrder:
+      type: integer
+      example: 5
+    AttributesGroup:
+      type: object
+      properties:
+        attributes:
+          type: array
+          description: List of Google Attributes
+          items:
+            $ref: '#/components/schemas/Attribute'
+        name:
+          $ref: '#/components/schemas/AttributesGroupName'
+        order:
+          $ref: '#/components/schemas/AttributesGroupOrder'
+    AttributesGroupList:
+      type: array
+      description: List of Google Groups
+      items:
+        $ref: '#/components/schemas/AttributesGroup'
+    AttributesGroupResponse:
+      type: object
+      properties:
+        groups:
+          $ref: '#/components/schemas/AttributesGroupList'
+    AttributesMissingParametersError:
+      type: object
+      properties:
+        errors:
+          type: object
+          properties:
+            json:
+              type: object
+              properties:
+                lang:
+                  description: lang parameter is required
+                  type: string
+                  example: is required
+                category_name:
+                  description: '''category_name parameter required'''
+                  type: string
+                  example: is required
+    AttributesWrongCategoryError:
+      type: object
+      properties:
+        errors:
+          type: object
+          properties:
+            json:
+              type: string
+              description: Category name not found in DB
+              example: Category name not found in DB
+    AttributesWrongLangError:
+      type: object
+      properties:
+        errors:
+          type: object
+          properties:
+            json:
+              type: object
+              properties:
+                lang:
+                  type: object
+                  properties:
+                    explanation:
+                      description: '''Invalid lang parameter value'''
+                      type: string
+                      example: xx is an incorrect value
+                    choices:
+                      type: array
+                      items:
+                        type: string
+                      description: languages choices available
+                      example:
+                      - DE
+                      - EN
+                      - ES
+                      - FR
+                      - IT
+                      - PT
+                      - PT_BR
+    OrgId:
+      description: Organization id
+      type: integer
+      example: 42
+    CreatedDate:
+      type: string
+      description: Creation date on Partoo
+      format: datetime
+      example: '2019-08-01T19:15:54.256000+02:00'
+    PlanUpdate:
+      description: Plan
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          enum:
+          - presence_management
+          - review_management
+          - posts
+          - messages
+          - review_booster
+          - bulk_modification
+          - feedback_management
+          - partoo_smb
+          - competitive_benchmark
+          - messages_channel_sms
+          - review_management_advanced
+          - booking_links
+          - webhooks
+          description: Plan's name.
+          example: presence_management
+        expiration_date:
+          type: string
+          pattern: date
+          description: Expiration date for a plan, defaults to indefinite.
+          example: '2026-01-01'
+          default: null
+    Plan:
+      allOf:
+      - $ref: '#/components/schemas/PlanUpdate'
+      properties:
+        subscription_date:
+          type: string
+          pattern: date
+          description: Plan's subscription date.
+          example: '2025-01-01'
+    GetPlaceActionLinks.Array:
+      description: List of Place Action Links
+      type: array
+      items:
+        type: object
+        properties:
+          gmb_id:
+            type: string
+            description: Google My Business ID for place action.
+          name:
+            type: string
+            description: API for place action type name.
+      example:
+      - gmb_id: APPOINTMENT
+        name: Appointment links
+      - gmb_id: DINING_RESERVATION
+        name: Reservations links
+      - gmb_id: FOOD_DELIVERY
+        name: Food delivery links
+      - gmb_id: FOOD_ORDERING
+        name: Food ordering links
+      - gmb_id: FOOD_TAKEOUT
+        name: Food takeout links
+      - gmb_id: ONLINE_APPOINTMENT
+        name: Online appointment links
+      - gmb_id: SHOP_ONLINE
+        name: Shop Online links
+    GetPlaceActionLinksResponse:
+      type: object
+      properties:
+        place_action_links:
+          $ref: '#/components/schemas/GetPlaceActionLinks.Array'
+    ReviewPublisherLabel:
+      type: string
+      description: Publisher label
+      enum:
+      - google_my_business
+      - facebook
+      - tripadvisor
+    ReviewState:
+      type: string
+      description: Reply state
+      enum:
+      - treated
+      - not_treated
+      - deleted
+    TagLabel:
+      description: Tag label <= 30 characters, no commas.
+      type: string
+      example: food
+    ReviewId:
+      type: integer
+      description: Review id
+      example: 34
+    ReviewPublisherId:
+      type: string
+      description: Review id on publisher
+      example: accounts/114063712393225091258/locations/74805271119400652054
+    ReviewAuthorName:
+      type: string
+      description: 'API for review author name. Note: Replies excluded.'
+      example: Castorche
+    ReviewCreateDate:
+      type: string
+      description: Review creation date
+      format: datetime
+      example: '2017-07-01T16:10:23.156000+02:00'
+    ReviewUpdateDate:
+      type: string
+      description: Review update date
+      format: datetime
+      example: '2017-08-01T19:15:54.256000+02:00'
+    ReviewDeleteDate:
+      type: string
+      description: Review deletion date
+      format: datetime
+    ReviewRating:
+      type: integer
+      description: Review rating (can be null)
+      maximum: 5
+      minimum: 0
+      example: 3
+    ReviewRecommended:
+      type: boolean
+      description: Review recommended (nullable)
+    ReviewTitle:
+      type: string
+      description: Review title
+    ReviewBody:
+      type: string
+      description: Review body content
+      example: Magasin un peu vieillot , mais personnel très sympathique, nombreuses
+        références en rayons , un très bon choix côté vin...
+    ReviewLink:
+      type: string
+      format: uri
+      description: Publisher review link.
+    CommentId:
+      type: integer
+      description: Comment id
+      example: 82938
+    CommentBody:
+      type: string
+      description: Reply content
+      example: Merci ❤️
+    ParentId:
+      type: integer
+      description: Parent comment ID specified only for replies on Facebook.
+    Comment:
+      description: Reply to a review
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/CommentId'
+        partner_id:
+          $ref: '#/components/schemas/ReviewPublisherId'
+        created:
+          $ref: '#/components/schemas/CreatedDate'
+        author_name:
+          $ref: '#/components/schemas/ReviewAuthorName'
+        content:
+          $ref: '#/components/schemas/CommentBody'
+        date:
+          type: string
+          description: Comment date
+          format: datetime
+          example: '2017-08-01T19:15:54.256000+02:00'
+        update_date:
+          type: string
+          format: datetime
+          description: Comment update date, specified only if comment was updated.
+          example: '2017-08-01T19:15:54.256000+02:00'
+        can_edit:
+          type: boolean
+          description: Check if current user can edit a Facebook reply. External user
+            replies cannot be edited.
+          example: true
+        review_id:
+          $ref: '#/components/schemas/ReviewId'
+        parent_id:
+          $ref: '#/components/schemas/ParentId'
+        user_id:
+          type: string
+          description: 'User id of the comment author
+
+            '
+          example: 123456789abcdef2f60c42ff
+        is_reply_suggestion:
+          type: boolean
+          description: AI-generated comment flag.
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          description: List of comment replies.
+    TagId:
+      description: Tag id
+      type: integer
+      example: 25
+    TagColor:
+      description: Tag color in hex format.
+      type: string
+      enum:
+      - '#808080'
+      - '#9B7CDB'
+      - '#F47FBE'
+      - '#4D4D4D'
+      - '#9E6957'
+      - '#2F8DE4'
+      - '#37CED0'
+      - '#53C944'
+      - '#B1DA34'
+      - '#F78234'
+      - '#F4BD38'
+      - '#992842'
+      example: '#808080'
+    Tag:
+      description: Tag
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/TagId'
+        label:
+          description: The label of the tag
+          allOf:
+          - $ref: '#/components/schemas/TagLabel'
+        color:
+          $ref: '#/components/schemas/TagColor'
+    Review:
+      description: Business Review on partner
+      type: object
+      properties:
+        key:
+          type: string
+        org_id:
+          $ref: '#/components/schemas/OrgId'
+        id:
+          $ref: '#/components/schemas/ReviewId'
+        business_id:
+          $ref: '#/components/schemas/BusinessId'
+        partner:
+          $ref: '#/components/schemas/ReviewPublisherLabel'
+        partner_id:
+          $ref: '#/components/schemas/ReviewPublisherId'
+        author_name:
+          $ref: '#/components/schemas/ReviewAuthorName'
+        date:
+          $ref: '#/components/schemas/ReviewCreateDate'
+        update_date:
+          $ref: '#/components/schemas/ReviewUpdateDate'
+        delete_date:
+          $ref: '#/components/schemas/ReviewDeleteDate'
+        rating:
+          $ref: '#/components/schemas/ReviewRating'
+        recommended:
+          $ref: '#/components/schemas/ReviewRecommended'
+        title:
+          $ref: '#/components/schemas/ReviewTitle'
+        content:
+          $ref: '#/components/schemas/ReviewBody'
+        state:
+          $ref: '#/components/schemas/ReviewState'
+        link:
+          $ref: '#/components/schemas/ReviewLink'
+        comments:
+          $ref: '#/components/schemas/Comment'
+        tags:
+          type: array
+          description: Tags associated to the review
+          items:
+            $ref: '#/components/schemas/Tag'
+    BusinessID:
+      description: Business id
+      type: string
+      example: 5409c35a97bbc544d8e26737
+    TotalItemsCount:
+      description: Returns total number of results for specified filters and dimensions.
+      type: integer
+      example: 1
+    BusinessImpressionsDesktopMaps:
+      type: integer
+      description: Business impressions on Google Maps Desktop; multiple impressions
+        by a user in a day count as one.
+      example: 123
+    BusinessImpressionsMobileMaps:
+      type: integer
+      description: Business impressions on Google Maps on Mobile devices. Multiple
+        impressions by a unique user in a day are counted as one.
+      example: 123
+    BusinessImpressionsDesktopSearch:
+      type: integer
+      description: Business impressions on Google Search Desktop devices, unique user
+        multiple impressions in a day counted as one.
+      example: 123
+    BusinessImpressionsMobileSearch:
+      type: integer
+      description: Business impressions on Google Search on Mobile devices. Unique
+        user multiple impressions in a day count as one impression.
+      example: 123
+    BusinessDirectionRequests:
+      type: integer
+      description: Count of direction requests to business location.
+      example: 123
+    ActionsPhone:
+      type: integer
+      description: Customer call tracking API
+      example: 123
+    ActionsWebsite:
+      type: integer
+      description: Website link clickers
+      example: 123
+    AnalyticsDate:
+      type: string
+      description: First day of the aggregation
+      example: '2019-11-05'
+    AnalyticsBucket:
+      type: string
+      description: Time aggregation requested
+      example: day
+    PresenceAnalyticsMetricsResults:
+      type: array
+      items:
+        type: object
+        properties:
+          business_impressions_desktop_maps:
+            $ref: '#/components/schemas/BusinessImpressionsDesktopMaps'
+          business_impressions_mobile_maps:
+            $ref: '#/components/schemas/BusinessImpressionsMobileMaps'
+          business_impressions_desktop_search:
+            $ref: '#/components/schemas/BusinessImpressionsDesktopSearch'
+          business_impressions_mobile_search:
+            $ref: '#/components/schemas/BusinessImpressionsMobileSearch'
+          business_direction_requests:
+            $ref: '#/components/schemas/BusinessDirectionRequests'
+          call_clicks:
+            $ref: '#/components/schemas/ActionsPhone'
+          website_clicks:
+            $ref: '#/components/schemas/ActionsWebsite'
+          date:
+            $ref: '#/components/schemas/AnalyticsDate'
+          bucket:
+            $ref: '#/components/schemas/AnalyticsBucket'
+          business_id:
+            $ref: '#/components/schemas/BusinessID'
+    PresenceAnalyticsMetricsResponse:
+      type: object
+      properties:
+        page:
+          $ref: '#/components/schemas/Page'
+        count:
+          $ref: '#/components/schemas/TotalItemsCount'
+        max_page:
+          $ref: '#/components/schemas/MaxPage'
+        metrics:
+          $ref: '#/components/schemas/PresenceAnalyticsMetricsResults'
+    Keyword:
+      type: string
+      description: User-entered lowercase string for "keyword" dimension.
+      example: 123
+    types_Count:
+      type: integer
+      description: API for monthly keyword search count values, representing unique
+        user usage.
+      example: 123
+    Threshold:
+      type: integer
+      description: API for monthly threshold values indicating the maximum count of
+        unique users for a keyword.
+      example: 123
+    types_AnalyticsDate:
+      type: string
+      description: First day of the aggregation
+      example: '2019-11-01'
+    types_AnalyticsBucket:
+      type: string
+      description: Time aggregation requested
+      example: month
+    PresenceAnalyticsKeywordsResults:
+      type: array
+      items:
+        type: object
+        properties:
+          keyword:
+            $ref: '#/components/schemas/Keyword'
+          count:
+            $ref: '#/components/schemas/types_Count'
+          threshold:
+            $ref: '#/components/schemas/Threshold'
+          date:
+            $ref: '#/components/schemas/types_AnalyticsDate'
+          bucket:
+            $ref: '#/components/schemas/types_AnalyticsBucket'
+          business_id:
+            $ref: '#/components/schemas/BusinessID'
+    PresenceAnalyticsKeywordsResponse:
+      type: object
+      properties:
+        page:
+          $ref: '#/components/schemas/Page'
+        count:
+          $ref: '#/components/schemas/TotalItemsCount'
+        max_page:
+          $ref: '#/components/schemas/MaxPage'
+        keywords:
+          $ref: '#/components/schemas/PresenceAnalyticsKeywordsResults'
+    GroupID:
+      description: Business id
+      type: integer
+      example: 12312
+    TagID:
+      description: Tag id
+      type: integer
+      example: 10,12,44
+    ReviewMetricsResponse:
+      type: object
+      required:
+      - dimension
+      - metrics
+      properties:
+        dimension:
+          oneOf:
+          - type: string
+          - type: number
+          - type: 'null'
+          description: 'Unique identifier of the dimension:
+
+            - Type: string (business, user, day, week, month, year)
+
+            - Type: number (group, tag)
+
+            - Type: null (when not set)
+
+            - Format: YYYY-MM-DD (day, week)
+
+            - Format: YYYY-MM (month)
+
+            - Format: YYYY (year)'
+          example: 59b2645db12ff60643ef832c
+        metrics:
+          type: object
+          properties:
+            average_rating:
+              type: number
+              format: float
+              description: Average rating.
+            average_rating_distribution:
+              type: object
+              description: Count of businesses by ratings.
+              properties:
+                'NULL':
+                  type: number
+                  format: integer
+                  description: Count of unrated businesses.
+                0-3:
+                  type: number
+                  format: integer
+                  description: Count of businesses with ratings from 0 to 2.
+                3-3.8:
+                  type: number
+                  format: integer
+                  description: Count of businesses with rating between 3 and 3.8.
+                3.8-4.3:
+                  type: number
+                  format: integer
+                  description: Count of businesses with ratings between 3.8 and 4.3.
+                4.3-5:
+                  type: number
+                  format: integer
+                  description: Businesses with ratings between 4.3 and 5.
+            rank:
+              type: number
+              format: integer
+              description: Rank of dimension based on specified order, with same metrics
+                value having same rank.
+            rating_distribution:
+              type: object
+              properties:
+                '1':
+                  type: number
+                  format: integer
+                  description: Number of 1 star reviews.
+                '2':
+                  type: number
+                  format: integer
+                  description: Number of 2 star reviews.
+                '3':
+                  type: number
+                  format: integer
+                  description: Number of 3 star reviews.
+                '4':
+                  type: number
+                  format: integer
+                  description: Number of 4 star reviews.
+                '5':
+                  type: number
+                  format: integer
+                  description: Number of 5 star reviews.
+            reply_means:
+              type: object
+              properties:
+                ai_suggestion:
+                  type: number
+                  format: integer
+                  description: AI-suggested replies for reviews count.
+                auto_reply:
+                  type: number
+                  format: integer
+                  description: Count of auto-replied reviews.
+                manual:
+                  type: number
+                  format: integer
+                  description: Number of manually replied reviews.
+                reply_template:
+                  type: number
+                  format: integer
+                  description: Count of reviews replied with template (excluding auto
+                    replies).
+                total:
+                  type: number
+                  format: integer
+                  description: Calculate the total of different types of replies.
+            reply_time:
+              type: object
+              properties:
+                fast:
+                  type: number
+                  format: integer
+                  description: Reviews replied within 2 days count.
+                slow:
+                  type: number
+                  format: integer
+                  description: Reviews replied after 2 days.
+                not_replied:
+                  type: number
+                  format: integer
+                  description: Number of reviews not replied
+                total:
+                  type: number
+                  format: integer
+                  description: Total responses including fast, slow, and not replied.
+            reviews_count:
+              type: number
+              format: integer
+              description: Number of reviews
+        dimension_name:
+          type: string
+          description: 'Dimension name based on context: business, group, tag, user,
+            or not present.'
+        dimension_info:
+          type: object
+          description: Additional info about the dimension, returned only for `business`
+            dimensions.
+          properties:
+            address_full:
+              $ref: '#/components/schemas/AddressFull'
+            city:
+              $ref: '#/components/schemas/BusinessCity'
+            code:
+              $ref: '#/components/schemas/BusinessCode'
+            zipcode:
+              $ref: '#/components/schemas/BusinessZipcode'
+    ReviewsStatisticsResponse:
+      type: object
+      properties:
+        answer_time:
+          type: number
+          format: float
+          description: API calculates average response time in seconds for Google
+            partner reviews with comments.
+          example: 10493.90997409
+        average:
+          type: number
+          format: float
+          description: 'Average reviews rating.
+
+            '
+          maximum: 5
+          minimum: 0
+          example: 3.0394
+        treated:
+          type: number
+          format: integer
+          description: Total treated reviews count.
+          example: 9
+        not_treated:
+          type: number
+          format: integer
+          description: Total number of untreated reviews.
+          example: 10
+        answered:
+          type: number
+          format: integer
+          description: Total answered reviews count.
+          example: 8
+        satisfied:
+          type: number
+          format: integer
+          description: API for counting total *satisfied* reviews with rating criteria
+            for google_my_business, tripadvisor, and facebook.
+          example: 10
+        neutral:
+          type: number
+          format: integer
+          description: Get total number of neutral reviews with a rating of 3 on Google
+            My Business and TripAdvisor.
+          example: 6
+        dissatisfied:
+          type: number
+          format: integer
+          description: Get total number of dissatisfied reviews based on specific
+            criteria for different platforms.
+          example: 3
+        total:
+          type: number
+          format: integer
+          description: 'Total number of reviews.
+
+            '
+          example: 19
+    BusinessVideos:
+      description: Business videos URLs
+      deprecated: true
+      type: array
+      items:
+        type: string
+        format: uri
+    News:
+      deprecated: true
+      type: object
+      required:
+      - title
+      - description
+      properties:
+        description:
+          type: string
+          description: News description
+    BusinessNews:
+      deprecated: true
+      type: array
+      items:
+        $ref: '#/components/schemas/News'
+    Business:
+      description: Partoo App Business
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/BusinessId'
+        created:
+          description: Timestamp (seconds) of business creation
+          type: number
+          format: float
+          example: 1409925979.5
+        modified:
+          description: Timestamp of last business modification, excluding Custom Fields
+            or related objects.
+          type: number
+          format: float
+          example: 1561335111.681374
+        code:
+          $ref: '#/components/schemas/BusinessCode'
+        status:
+          $ref: '#/components/schemas/BusinessStatus'
+        org_id:
+          $ref: '#/components/schemas/BusinessOrgId'
+        group_id:
+          $ref: '#/components/schemas/GroupId'
+        name:
+          $ref: '#/components/schemas/BusinessName'
+        address:
+          description: API returns business address, same as `address_full` field
+            for historical reasons. Prefer using `address_full`.
+          type: string
+        address_full:
+          $ref: '#/components/schemas/AddressFull'
+        address2:
+          $ref: '#/components/schemas/Address2'
+        city:
+          $ref: '#/components/schemas/BusinessCity'
+        zipcode:
+          $ref: '#/components/schemas/BusinessZipcode'
+        region:
+          $ref: '#/components/schemas/BusinessRegion'
+        country:
+          $ref: '#/components/schemas/BusinessCountry'
+        default_lang:
+          $ref: '#/components/schemas/BusinessDefaultLang'
+        open_hours:
+          $ref: '#/components/schemas/OpenHours'
+        specific_hours:
+          $ref: '#/components/schemas/SpecificHours'
+        description_short:
+          $ref: '#/components/schemas/BusinessShortDescription'
+        description_long:
+          $ref: '#/components/schemas/BusinessLongDescription'
+        website_url:
+          $ref: '#/components/schemas/BusinessWebsite'
+        facebook_url:
+          $ref: '#/components/schemas/BusinessFacebookPage'
+        twitter_url:
+          $ref: '#/components/schemas/BusinessTwitter'
+        google_location_id:
+          description: Google Location ID for business linkage.
+          type: string
+        facebook_page_id:
+          description: Facebook Location ID for linked business.
+          type: string
+        national_identification_number:
+          $ref: '#/components/schemas/BusinessNationalIdentificationNumber'
+        logo_url:
+          description: Business LOGO URL
+          type: string
+          format: uri
+        contacts:
+          $ref: '#/components/schemas/BusinessContacts'
+        photos:
+          $ref: '#/components/schemas/Photos'
+        lat:
+          $ref: '#/components/schemas/Latitude'
+        long:
+          $ref: '#/components/schemas/Longitude'
+        subscriptions:
+          $ref: '#/components/schemas/Subscriptions'
+        features:
+          $ref: '#/components/schemas/Features'
+        videos:
+          $ref: '#/components/schemas/BusinessVideos'
+        siret:
+          deprecated: true
+          description: French business SIRET API.
+          type: string
+        completion_rate:
+          $ref: '#/components/schemas/BusinessCompletionRate'
+        news:
+          $ref: '#/components/schemas/BusinessNews'
+        promos:
+          $ref: '#/components/schemas/BusinessPromos'
+    WebhookConversation:
+      type: object
+      title: Conversation
+      properties:
+        id:
+          type: integer
+        consumer_img:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: API for consumer profile picture URL.
+          example: https://www.example.com/profile-picture.jpg
+        consumer_name:
+          type:
+          - string
+          - 'null'
+          description: Name of consumer, optional, format varies based on contact
+            platform.
+          example: John Doe
+        business:
+          type: object
+          properties:
+            id:
+              description: The id of the business
+              type: integer
+        messaging_partner:
+          $ref: '#/components/schemas/MessagingPartner'
+    MessageCreatedEvent:
+      properties:
+        message:
+          allOf:
+          - $ref: '#/components/schemas/Message'
+          - type: object
+        conversation:
+          allOf:
+          - $ref: '#/components/schemas/WebhookConversation'
+          - type: object
+        org_id:
+          type: integer
+          description: The id of the organization
+    MessageReceivedEvent:
+      allOf:
+      - $ref: '#/components/schemas/Message'
+      - type: object
+        properties:
+          message_id:
+            type: integer
+            deprecated: true
+            description: 'Deprecated: Use `id` instead of message id.'
+          org_id:
+            type: integer
+            description: The id of the organization
+          business_id:
+            type: string
+            description: The id of the business
+          received_at:
+            deprecated: true
+            type: string
+            description: 'Deprecated: Use `date` instead of `received_date` with format
+              "2023-01-31T16:22:17.327878+00:00".'
+            example: '2023-01-31T16:22:17.327878+00:00'
+          consumer_img:
+            type:
+            - string
+            - 'null'
+            format: url
+            description: API for consumer profile picture URL.
+            example: https://www.example.com/profile-picture.jpg
+          consumer_name:
+            type:
+            - string
+            - 'null'
+            description: Consumer name, optional, format varies by platform.
+            example: John Doe
+          messaging_partner:
+            $ref: '#/components/schemas/MessagingPartner'
+          event_type:
+            type: string
+            enum:
+            - message_received
+    LeadFieldType:
+      type: string
+      description: Lead field type with `OPT-IN` as `BOOLEAN` type.
+      enum:
+      - TEXT
+      - NUMBER
+      - EMAIL
+      - PHONE_NUMBER
+      - BOOLEAN
+      - OPT_IN
+      example: TEXT
+    LeadItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          $ref: '#/components/schemas/LeadFieldType'
+        name:
+          type: string
+          description: name of the field collected
+          example: Your firstname
+        value:
+          type: string
+          description: Lead field value.
+          example: John
+    LeadWebhook:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Webhook configuration identifier.
+          example: 1
+        source:
+          type: string
+          description: Lead source retrieval.
+          example: chatbot
+        created_at:
+          type: string
+          description: ISO 8601 date-time string for webhook creation date.
+          example: '2024-11-27T16:10:44.929678Z'
+        chatbot_id:
+          type: integer
+          description: Identifier of lead-collecting chatbot.
+          example: 1
+        chatbot_name:
+          type: string
+          description: Chatbot name for lead collection.
+          example: Jim
+        business_name:
+          type: string
+          description: Business name for lead.
+          example: Partoo
+        store_code:
+          type: string
+          description: Store business code related to lead.
+          example: Partoo123
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeadItem'
+  responses:
+    '400':
+      description: Your request is incorrect
+      content:
+        application/json:
+          schema:
+            description: Request error.
+            properties:
+              errors:
+                type: object
+                description: Error details.
+                properties:
+                  json:
+                    type: object
+    '401':
+      description: You are not authenticated
+      content:
+        application/json:
+          schema:
+            description: Authentication error.
+            type: object
+            properties:
+              errors:
+                type: object
+                description: Error details.
+                properties:
+                  authentication:
+                    type: string
+                    default: User not authenticated
+    '403':
+      description: Action not allowed.
+      content:
+        application/json:
+          schema:
+            description: Unauthorized action error.
+            type: object
+            properties:
+              errors:
+                type: object
+                description: Error details.
+                properties:
+                  authorization:
+                    type: string
+                    default: Operation not allowed
+    '404':
+      description: Resource does not exist
+      content:
+        application/json:
+          schema:
+            description: Resource not found error.
+            type: object
+            properties:
+              errors:
+                type: object
+                description: Error details.
+                properties:
+                  json:
+                    type: string
+                    default: Resource not found
+  parameters:
+    query_filter_by_fuzzy_query_on_business:
+      in: query
+      name: query
+      schema:
+        type: string
+      required: false
+      description: Parameter for fuzzy searching businesses by city, zipcode, and
+        name.
+    query_business__in:
+      in: query
+      name: business__in
+      description: Filter by business ids
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/BusinessId'
+    query_filter_by_org_id:
+      in: query
+      name: org_id
+      schema:
+        type: integer
+      required: false
+      description: Filter by organization id
+    query_filter_by_group_id:
+      in: query
+      name: group_id
+      schema:
+        type: integer
+      required: false
+      description: Filter by group id
+      deprecated: true
+    query_filter_by_groups:
+      in: query
+      name: groups
+      schema:
+        type: array
+        items:
+          type: integer
+      required: false
+      description: Filter by groups using new system with access logic (and/or) based
+        on groups sections. See Groups and Sections description.
+      example: 1,2,3
+    query_filter_by_country:
+      in: query
+      name: country
+      schema:
+        type: string
+      required: false
+      description: Filter by country using ISO 3166 alpha2 code.
+    query_filter_by_business_name:
+      in: query
+      name: name
+      schema:
+        type: string
+      required: false
+      description: Filter by name
+    query_filter_by_business_status:
+      in: query
+      name: status
+      schema:
+        $ref: '#/components/schemas/BusinessStatusFilter'
+    query_filter_by_zipcode:
+      in: query
+      name: zipcode
+      schema:
+        type: string
+      required: false
+      description: Filter by zipcode
+    query_filter_by_city:
+      in: query
+      name: city
+      schema:
+        type: string
+      required: false
+      description: Filter by city
+    query_filter_by_business_code:
+      in: query
+      name: code
+      schema:
+        type: string
+      required: false
+      description: Filter by code
+    query_filter_by_business_modification_timestamp:
+      in: query
+      name: modified__gte
+      deprecated: false
+      schema:
+        type: number
+      required: false
+      description: Filter by modified attribute with a minimum modified value.
+    query_filter_by_business_features__in:
+      in: query
+      name: features__in
+      schema:
+        allOf:
+        - $ref: '#/components/schemas/FeatureEnum'
+        description: Filter businesses by provided features.
+        type: string
+        example: diffusion,review_management
+    query_filter_by_business_features__notin:
+      in: query
+      name: features__notin
+      schema:
+        allOf:
+        - $ref: '#/components/schemas/FeatureEnum'
+        description: Filter businesses without all provided features.
+        type: string
+        example: diffusion,review_management
+    query_filter_by_business_subscription_to_review_management:
+      in: query
+      deprecated: false
+      name: subscribed_to_rm
+      schema:
+        type: string
+        enum:
+        - 'True'
+        - 'False'
+      required: false
+      description: Filter by current subscription to `review_management`.
+    query_filter_by_business_subscription_to_presence_management:
+      in: query
+      deprecated: false
+      name: subscribed_to_pm
+      schema:
+        type: string
+        enum:
+        - 'True'
+        - 'False'
+      required: false
+      description: Filter by subscription to `presence_management`, equivalent to
+        `features__in=diffusion`.
+    query_filter_by_business_subscription_to_review_booster:
+      in: query
+      deprecated: false
+      name: subscribed_to_rb
+      schema:
+        type: string
+        enum:
+        - 'True'
+        - 'False'
+      required: false
+      description: Filter by current subscription to `review_booster` using `features__in=review_invite`.
+    query_filter_by_business_subscription_to_messages:
+      in: query
+      deprecated: false
+      name: subscribed_to_bm
+      schema:
+        type: string
+        enum:
+        - 'True'
+        - 'False'
+      required: false
+      description: Filter by current subscription to `messages` using `features__in=messages`.
+    query_filter_by_business_completion_rate__gte:
+      in: query
+      name: completion_rate__gte
+      deprecated: false
+      schema:
+        type: number
+      required: false
+      description: Filter by completion rate attribute with a minimum value.
+    query_filter_by_business_completion_rate__lte:
+      in: query
+      name: completion_rate__lte
+      deprecated: false
+      schema:
+        type: number
+      required: false
+      description: Filter by completion rate attribute with completion rate less than
+        or equal to a specified value.
+    query_filter_by_business_completion_rate:
+      in: query
+      name: completion_rate
+      deprecated: false
+      schema:
+        type: string
+        enum:
+        - low
+        - mid
+        - high
+        example: low,mid
+      required: false
+      description: Filter by completion_rate attribute, values separated by comma.
+    query_filter_by_business_promo:
+      in: query
+      name: has_promo
+      deprecated: true
+      schema:
+        type: string
+        enum:
+        - 'True'
+        - 'False'
+      required: false
+      description: Retrieve businesses with promotions.
+    query_page_up_to_100:
+      in: query
+      name: page
+      schema:
+        type: integer
+        default: 1
+      description: Page number starting at 1, with 1 to 100 results per page.
+    query_per_page_1_100:
+      in: query
+      name: per_page
+      schema:
+        type: integer
+        default: 30
+        minimum: 1
+        maximum: 100
+      description: Limit of 100 items per page.
+    business_id:
+      in: path
+      name: business_id
+      required: true
+      schema:
+        type: string
+      description: Business id, can be replaced by unique store code for specified
+        user roles.
+    country:
+      in: query
+      name: country
+      required: true
+      schema:
+        type: string
+      description: Fetch available attributes for a specified country using ISO 3166
+        alpha2 code.
+      example: FR
+    category_name:
+      in: query
+      name: category_name
+      required: true
+      schema:
+        type: string
+        example: gcid:restaurant
+      description: Fetch available attributes for a category.
+    lang:
+      in: query
+      name: lang
+      required: false
+      schema:
+        type: string
+        enum:
+        - fr
+        - es
+        - it
+        - en
+        - de
+        - pt
+        - pt-BR
+      description: Translate attributes name and groups name to specified language;
+        default to user's language if not specified.
+    query_place_action_link_lang:
+      in: query
+      name: lang
+      required: false
+      schema:
+        $ref: '#/components/schemas/Lang'
+      description: Preferred language for place action links. Default language used
+        if not provided. Country's primary language used if user's default language
+        is unavailable.
+    query_business__notin:
+      in: query
+      name: business__notin
+      description: Excludes businesses from request.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/BusinessId'
+    query_content__isnull:
+      in: query
+      name: content__isnull
+      description: 'Filter reviews by content presence. Note: Refers to review content,
+        not replies.'
+      schema:
+        type: string
+        enum:
+        - 'true'
+        - 'false'
+        example: false
+    query_partner__in:
+      in: query
+      name: partner__in
+      description: Filter by publisher
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ReviewPublisherLabel'
+        example: google_my_business,facebook
+    query_gmb_rating__in:
+      in: query
+      name: gmb_rating__in
+      description: 'Filter only by Google ratings
+
+        '
+      schema:
+        type: array
+        items:
+          type: number
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+        example: 4,5
+    query_tripadvisor_rating__in:
+      in: query
+      name: tripadvisor_rating__in
+      description: Filter by Tripadvisor ratings.
+      schema:
+        type: array
+        items:
+          type: number
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+        example: 1,2
+    query_recommended__in:
+      in: query
+      name: recommended__in
+      description: Filter by Facebook recommendation.
+      schema:
+        type: array
+        items:
+          type: boolean
+          enum:
+          - true
+          - false
+        example: false
+    query_review_update_date__gte:
+      in: query
+      name: update_date__gte
+      description: Filter reviews by `update_date` >= `given_date` in UTC.
+      schema:
+        type: string
+        format: datetime
+        example: '2017-08-01T00:00:00'
+    query_review_update_date__lte:
+      in: query
+      name: update_date__lte
+      description: Filter reviews by `update_date` before or on `given_date` in UTC.
+      schema:
+        type: string
+        format: datetime
+        example: '2017-08-02T00:00:00'
+    query_review_state:
+      in: query
+      name: state__in
+      description: Filter by state
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ReviewState'
+        example: treated,not_treated
+    query_tag_label_in:
+      in: query
+      name: tag_label__in
+      description: Filter by Tag label, partial matching supported.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TagLabel'
+        example: food,drink
+    query_review_without_tag:
+      in: query
+      name: without_tag
+      description: Filter reviews without tags.
+      schema:
+        type: boolean
+        example: true
+    query_keywords:
+      in: query
+      name: keywords
+      description: 'Filter reviews by keywords. Use simple or composed words separated
+        by `+`. Example: `keywords=bonjour` or `keywords=good+service`.'
+      schema:
+        type: array
+        items:
+          type: string
+        example: bonjour,good+service
+    query_order_by:
+      in: query
+      name: order_by
+      schema:
+        type: string
+        enum:
+        - update_date
+        - -update_date
+        example: update_date
+      description: '`-` sign indicates descending order.'
+    query_metrics:
+      in: query
+      name: metrics
+      required: true
+      description: List of analytics to return, at least one required.
+      schema:
+        type: string
+        enum:
+        - business_impressions_desktop_maps
+        - business_impressions_desktop_search
+        - business_impressions_mobile_maps
+        - business_impressions_mobile_search
+        - business_direction_requests
+        - call_clicks
+        - website_clicks
+    query_dimensions:
+      in: query
+      name: dimensions
+      required: false
+      description: Aggregates data by 'business' and one time dimension. Sum of metrics
+        returned for all days and businesses if no dimension specified.
+      schema:
+        type: string
+        enum:
+        - business
+        - day
+        - week
+        - month
+        - year
+    parameters_query_order_by:
+      in: query
+      name: order_by
+      required: false
+      description: Object used in request, can be dimension or metric. Only one in
+        list. Order by DESC if specified.
+      schema:
+        type: string
+        enum:
+        - <object>
+        - -<object>
+        example: order_by=-call_clicks
+    parameters_query_business__in:
+      in: query
+      name: business__in
+      description: Filter by business ids
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/BusinessID'
+    parameters_query_business__notin:
+      in: query
+      name: business__notin
+      required: false
+      description: Filter by all allowed businesses except those specified in `business__notin`.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/BusinessID'
+    query_city:
+      in: query
+      name: city
+      required: false
+      description: Filter by city
+      schema:
+        type: string
+    query_query:
+      in: query
+      name: query
+      required: false
+      description: Parameter for fuzzy searching businesses by city, zipcode, and
+        name.
+      schema:
+        type: string
+    query_filter_date__gte:
+      in: query
+      name: filter_date__gte
+      required: false
+      description: Filter analytics by date >= given date.
+      schema:
+        type: string
+        format: datetime
+    query_filter_date__lte:
+      in: query
+      name: filter_date__lte
+      description: Filter analytics by date where filter_date is less than or equal
+        to given_date.
+      schema:
+        type: string
+        format: datetime
+    parameters_query_page:
+      in: query
+      name: page
+      required: false
+      description: Request page number, defaults to 1.
+      schema:
+        type: integer
+        minimum: 1
+    query_per_page:
+      in: query
+      name: per_page
+      required: false
+      description: 'API: Maximum number of items per page defaults to 500.'
+      schema:
+        type: integer
+        maximum: 500
+    parameters_query_metrics:
+      in: query
+      name: metrics
+      required: true
+      description: List of analytics to return with at least one required.
+      schema:
+        type: string
+        enum:
+        - count
+        - threshold
+        example: metrics=count,threshold
+    parameters_query_dimensions:
+      in: query
+      name: dimensions
+      required: false
+      description: Aggregates data by 'business' and one time dimension. If no dimension
+        specified, sums metrics for all days and businesses.
+      schema:
+        type: string
+        enum:
+        - business
+        - keyword
+        - month
+        - year
+        example: dimensions=keyword,month
+    parameters_query_order_by-2:
+      in: query
+      name: order_by
+      required: false
+      description: Field used for ordering results in a request, can be a dimension
+        or metric. Use DESC for descending order.
+      schema:
+        type: string
+        enum:
+        - <object>
+        - -<object>
+        example: order_by=-count
+    parameters_query_filter_date__gte:
+      in: query
+      name: filter_date__gte
+      required: false
+      description: Filter analytics by date. Return data where date is greater than
+        or equal to given date.
+      schema:
+        type: string
+        format: datetime
+    parameters_query_filter_date__lte:
+      in: query
+      name: filter_date__lte
+      required: false
+      description: Filter analytics by date where date is less than or equal to a
+        given date.
+      schema:
+        type: string
+        format: datetime
+    parameters_query_metrics-2:
+      in: query
+      name: metrics
+      required: true
+      description: List of analytics to return, at least one required.
+      schema:
+        type: string
+        enum:
+        - average_rating
+        - rating_distribution
+        - reviews_count
+        - reply_time
+        - reply_means
+        - average_rating_distribution
+        - rank
+    parameters_query_dimensions-2:
+      in: query
+      name: dimensions
+      required: false
+      description: Aggregates data if no dimension specified.
+      schema:
+        type: string
+        enum:
+        - day
+        - week
+        - month
+        - year
+        - business
+        - group
+        - user
+        - tag
+    parameters_query_order_by-3:
+      in: query
+      name: order_by
+      required: false
+      description: List of orders with optional sorting by field in ascending or descending
+        order.
+      schema:
+        type: string
+        example: -average_rating
+    query_groups:
+      in: query
+      name: groups
+      description: Filter by groups ids
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/GroupID'
+    query_tags:
+      in: query
+      name: tags
+      description: Filter reviews by assigned tags.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TagID'
+    query_update_date__gte:
+      in: query
+      name: update_date__gte
+      required: false
+      description: Filter reviews by `update_date`.
+      schema:
+        type: string
+        format: datetime
+    query_update_date__lte:
+      in: query
+      name: update_date__lte
+      description: Filter reviews by `update_date` before a specified date.
+      schema:
+        type: string
+        format: datetime
+    parameters_query_page-2:
+      in: query
+      name: page
+      required: false
+      description: API for requesting a specific page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    parameters_query_per_page:
+      in: query
+      name: per_page
+      required: false
+      description: Max number of items per page.
+      schema:
+        type: integer
+        default: 30
+    query_review_business__in:
+      in: query
+      name: business__in
+      description: Filter reviews by business ids.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/BusinessId'
+    query_review_bucket:
+      in: query
+      name: bucket
+      schema:
+        type: string
+        default: week
+        enum:
+        - day
+        - week
+        - month
+        - year
+      description: Define data bucket time range for specified precision level.
+    query_review_cumulative:
+      in: query
+      name: cumulative
+      schema:
+        type: string
+        default: 'true'
+        enum:
+        - 'true'
+        - 'false'
+      description: Return average rating of reviews from current or all buckets based
+        on `cumulative` flag.
+  securitySchemes:
+    ApiKeyAuth:
+      description: Partoo API uses API Key for authentication in the `x-APIKey` header,
+        granting access based on user role.
+      type: apiKey
+      in: header
+      name: x-APIKey
